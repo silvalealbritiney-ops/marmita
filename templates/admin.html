@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel da Mamãe - Nogueira Delivery</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 15px; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #d32f2f; margin-bottom: 5px; }
+        .grupo { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; position: relative; }
+        label { font-weight: bold; display: block; margin-top: 8px; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 15px; }
+        .flex-precos { display: flex; gap: 10px; }
+        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        .btn-add { background: #0288d1; color: white; border: none; padding: 10px 15px; font-size: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-bottom: 15px; }
+        .btn-del { background: #d32f2f; color: white; border: none; padding: 5px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; float: right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <a href="/">👈 Ver Site</a>
+            <a href="/logout" style="color:red; font-weight:bold;">Sair</a>
+        </div>
+        <h2>✏️ Editar Cardápio - Nogueira Delivery</h2>
+        
+        <form method="POST">
+            <h3>1. Acompanhamentos do Dia</h3>
+            <small>Separe por vírgula:</small>
+            <textarea name="acompanhamentos" rows="2">{{ cardapio.acompanhamentos }}</textarea>
+
+            <h3>2. Bebidas Disponíveis</h3>
+            <small>Digite o nome e o preço (separe cada item por vírgula). Deixe em branco se não houver:</small>
+            <textarea name="bebidas" rows="2">{{ cardapio.bebidas }}</textarea>
+
+            <h3>3. Sobremesas Disponíveis</h3>
+            <small>Digite o nome e o preço (separe cada item por vírgula). Deixe em branco se não houver:</small>
+            <textarea name="sobremesas" rows="2">{{ cardapio.sobremesas }}</textarea>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+                <h3>4. Opções de Carnes e Preços</h3>
+                <button type="button" class="btn-add" onclick="addOpcao()">➕ Adicionar Opção</button>
+            </div>
+
+            <div id="container-grupos">
+                {% for grupo in cardapio.grupos_carnes %}
+                    <div class="grupo">
+                        <button type="button" class="btn-del" onclick="this.parentElement.remove()">❌ Remover</button>
+                        <div class="flex-precos">
+                            <div>
+                                <label>Preço M (R$):</label>
+                                <input type="text" name="preco_m[]" value="{{ grupo.preco_m }}">
+                            </div>
+                            <div>
+                                <label>Preço G (R$):</label>
+                                <input type="text" name="preco_g[]" value="{{ grupo.preco_g }}">
+                            </div>
+                        </div>
+                        <label>Carnes / Opções desta faixa de preço:</label>
+                        <textarea name="opcoes[]" rows="2">{{ grupo.opcoes }}</textarea>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn-salvar">💾 Salvar e Atualizar Site</button>
+        </form>
+    </div>
+
+    <script>
+        function addOpcao() {
+            var div = document.createElement('div');
+            div.className = 'grupo';
+            div.innerHTML = `
+                <button type="button" class="btn-del" onclick="this.parentElement.remove()">❌ Remover</button>
+                <div class="flex-precos">
+                    <div>
+                        <label>Preço M (R$):</label>
+                        <input type="text" name="preco_m[]" value="20,00">
+                    </div>
+                    <div>
+                        <label>Preço G (R$):</label>
+                        <input type="text" name="preco_g[]" value="22,00">
+                    </div>
+                </div>
+                <label>Carnes / Opções desta faixa de preço:</label>
+                <textarea name="opcoes[]" rows="2" placeholder="Ex: Bife Acebolado, Frango Empanado"></textarea>
+            `;
+            document.getElementById('container-grupos').appendChild(div);
+        }
+    </script>
+</body>
+</html>

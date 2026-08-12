@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Administração</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { background: #d32f2f; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .erro { color: red; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Área da Mamãe 🔐</h2>
+        {% if erro %}<p class="erro">{{ erro }}</p>{% endif %}
+        <form method="POST">
+            <input type="password" name="senha" placeholder="Digite a senha" required autofocus>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel da Mamãe</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 12px 0; }
+        .btn { padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; color: white; font-size: 14px; }
+        .btn-green { background: #2e7d32; }
+        .btn-red { background: #c62828; }
+        .btn-del { background: #757575; font-size: 12px; margin-left: 5px; }
+        .add-form { background: #f1f1f1; padding: 15px; border-radius: 6px; margin-top: 20px; }
+        input { width: 100%; padding: 8px; margin: 5px 0 10px; box-sizing: border-box; }
+        .nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/">👈 Ver Site</a>
+            <a href="/logout" style="color: red;">Sair</a>
+        </div>
+        <h2>🍱 Gerenciar Cardápio</h2>
+        
+        {% for item in cardapio %}
+            <div class="item">
+                <div>
+                    <strong>{{ item.nome }}</strong> - R$ {{ "%.2f"|format(item.preco) }}
+                </div>
+                <div>
+                    {% if item.disponivel %}
+                        <a href="/admin/toggle/{{ item.id }}" class="btn btn-green">Disponível</a>
+                    {% else %}
+                        <a href="/admin/toggle/{{ item.id }}" class="btn btn-red">Esgotado</a>
+                    {% endif %}
+                    <a href="/admin/deletar/{{ item.id }}" class="btn btn-del" onclick="return confirm('Apagar este item?')">❌</a>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="add-form">
+            <h3>➕ Adicionar Novo Prato</h3>
+            <form action="/admin/adicionar" method="POST">
+                <label>Nome do Prato / Bebida:</label>
+                <input type="text" name="nome" placeholder="Ex: Marmita Especial de Peixe" required>
+                <label>Preço (R$):</label>
+                <input type="text" name="preco" placeholder="Ex: 20,00" required>
+                <button type="submit" class="btn btn-green" style="width: 100%; border: none; cursor: pointer; padding: 10px;">Adicionar ao Cardápio</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
