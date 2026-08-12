@@ -2,91 +2,98 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel da Mamãe - Nogueira Delivery</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 15px; }
-        .container { max-width: 650px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #d32f2f; margin-bottom: 5px; }
-        .grupo { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; position: relative; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #d32f2f; margin-bottom: 15px; text-align: center; }
+        .grupo { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
         label { font-weight: bold; display: block; margin-top: 8px; }
-        input, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 15px; }
-        .flex-precos { display: flex; gap: 10px; }
-        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 15px; }
-        .btn-add { background: #0288d1; color: white; border: none; padding: 10px 15px; font-size: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-bottom: 15px; }
-        .btn-del { background: #d32f2f; color: white; border: none; padding: 5px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; float: right; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
+        .item-carne { display: flex; gap: 8px; margin-top: 8px; }
+        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .btn-add { background: #0288d1; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-del { background: #d32f2f; color: white; border: none; padding: 5px 10px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .link-site { text-align: center; display: block; margin-bottom: 15px; color: #0288d1; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <a href="/">👈 Ver Site</a>
-            <a href="/logout" style="color:red; font-weight:bold;">Sair</a>
-        </div>
-        <h2>✏️ Editar Cardápio - Nogueira Delivery</h2>
-        
-        <form method="POST">
-            <h3>1. Acompanhamentos do Dia</h3>
-            <small>Separe por vírgula:</small>
-            <textarea name="acompanhamentos" rows="2">{{ cardapio.acompanhamentos }}</textarea>
 
-            <h3>2. Bebidas Disponíveis</h3>
-            <small>Digite o nome e o preço (separe cada item por vírgula). Deixe em branco se não houver:</small>
-            <textarea name="bebidas" rows="2">{{ cardapio.bebidas }}</textarea>
+<div class="container">
+    <a href="/" class="link-site">⬅ Ver o Site do Cliente</a>
+    <h2>Painel da Mamãe 👵❤️</h2>
+    <p style="text-align: center; color: #666;">Altere o cardápio do dia de forma simples:</p>
 
-            <h3>3. Sobremesas Disponíveis</h3>
-            <small>Digite o nome e o preço (separe cada item por vírgula). Deixe em branco se não houver:</small>
-            <textarea name="sobremesas" rows="2">{{ cardapio.sobremesas }}</textarea>
+    <div class="grupo">
+        <h3>💰 Preços das Marmitas</h3>
+        <label>Preço da Marmita M (R$):</label>
+        <input type="text" id="tamanho_m" value="{{ cardapio.tamanho_m }}">
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-                <h3>4. Opções de Carnes e Preços</h3>
-                <button type="button" class="btn-add" onclick="addOpcao()">➕ Adicionar Opção</button>
-            </div>
-
-            <div id="container-grupos">
-                {% for grupo in cardapio.grupos_carnes %}
-                    <div class="grupo">
-                        <button type="button" class="btn-del" onclick="this.parentElement.remove()">❌ Remover</button>
-                        <div class="flex-precos">
-                            <div>
-                                <label>Preço M (R$):</label>
-                                <input type="text" name="preco_m[]" value="{{ grupo.preco_m }}">
-                            </div>
-                            <div>
-                                <label>Preço G (R$):</label>
-                                <input type="text" name="preco_g[]" value="{{ grupo.preco_g }}">
-                            </div>
-                        </div>
-                        <label>Carnes / Opções desta faixa de preço:</label>
-                        <textarea name="opcoes[]" rows="2">{{ grupo.opcoes }}</textarea>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <button type="submit" class="btn-salvar">💾 Salvar e Atualizar Site</button>
-        </form>
+        <label>Preço da Marmita G (R$):</label>
+        <input type="text" id="tamanho_g" value="{{ cardapio.tamanho_g }}">
     </div>
 
-    <script>
-        function addOpcao() {
-            var div = document.createElement('div');
-            div.className = 'grupo';
-            div.innerHTML = `
-                <button type="button" class="btn-del" onclick="this.parentElement.remove()">❌ Remover</button>
-                <div class="flex-precos">
-                    <div>
-                        <label>Preço M (R$):</label>
-                        <input type="text" name="preco_m[]" value="20,00">
-                    </div>
-                    <div>
-                        <label>Preço G (R$):</label>
-                        <input type="text" name="preco_g[]" value="22,00">
-                    </div>
-                </div>
-                <label>Carnes / Opções desta faixa de preço:</label>
-                <textarea name="opcoes[]" rows="2" placeholder="Ex: Bife Acebolado, Frango Empanado"></textarea>
-            `;
-            document.getElementById('container-grupos').appendChild(div);
-        }
-    </script>
+    <div class="grupo">
+        <h3>🥩 Carnes do Dia</h3>
+        <div id="listaCarnes">
+            {% for carne in cardapio.carnes %}
+            <div class="item-carne">
+                <input type="text" class="input-carne" value="{{ carne }}">
+                <button type="button" class="btn-del" onclick="removerCarne(this)">X</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn-add" onclick="adicionarCarne()">+ Adicionar Outra Carne</button>
+    </div>
+
+    <button type="button" class="btn-salvar" onclick="salvarGeral()">💾 SALVAR CARDÁPIO</button>
+</div>
+
+<script>
+    function adicionarCarne() {
+        let container = document.getElementById('listaCarnes');
+        let div = document.createElement('div');
+        div.className = 'item-carne';
+        div.innerHTML = `
+            <input type="text" class="input-carne" placeholder="Nome da carne">
+            <button type="button" class="btn-del" onclick="removerCarne(this)">X</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function removerCarne(btn) {
+        btn.parentElement.remove();
+    }
+
+    function salvarGeral() {
+        let inputs = document.querySelectorAll('.input-carne');
+        let carnes = [];
+        inputs.forEach(i => {
+            if (i.value.trim() !== '') carnes.push(i.value.trim());
+        });
+
+        let dados = {
+            tamanho_m: document.getElementById('tamanho_m').value,
+            tamanho_g: document.getElementById('tamanho_g').value,
+            carnes: carnes
+        };
+
+        fetch('/api/salvar-cardapio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('✅ Cardápio atualizado com sucesso!');
+            window.location.reload();
+        })
+        .catch(err => {
+            alert('❌ Erro ao salvar!');
+        });
+    }
+</script>
+
 </body>
 </html>

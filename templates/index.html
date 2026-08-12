@@ -1,139 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nogueira Delivery - Marmitex</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 15px; text-align: center; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: left; }
-        .logo { display: block; margin: 0 auto 10px; max-width: 120px; }
-        h1 { color: #d32f2f; text-align: center; margin-bottom: 2px; }
-        h3 { text-align: center; color: #555; margin-top: 0; margin-bottom: 20px; }
-        .section { background: #eef7ee; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9; margin-bottom: 15px; }
-        .section h4 { margin-top: 0; color: #2e7d32; }
-        label { display: block; margin: 8px 0; font-size: 15px; cursor: pointer; }
-        input[type="text"], select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .total-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 18px; color: #856404; text-align: center; margin-bottom: 15px; }
-        .btn-pedir { background-color: #25d366; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .campo-troco { display: none; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <img src="{{ url_for('static', filename='logo.png') }}" class="logo" alt="Logo">
-    <h1>NOGUEIRA DELIVERY</h1>
-    <h3>MARMITEX</h3>
-
-    <form id="formPedido">
-        <!-- 1. ESCOLHA O TAMANHO -->
+<!-- 1. ESCOLHA O TAMANHO -->
         <div class="section">
             <h4>1. Escolha o Tamanho</h4>
-            <label><input type="radio" name="tamanho" value="Marmita M" data-preco="20" onclick="atualizarTotal()" checked> 📦 Tamanho M - R$ 20,00</label>
-            <label><input type="radio" name="tamanho" value="Marmita G" data-preco="22" onclick="atualizarTotal()"> 📦 Tamanho G - R$ 22,00</label>
+            <label><input type="radio" name="tamanho" value="Marmita M" data-preco="{{ cardapio.tamanho_m }}" onclick="atualizarTotal()" checked> 📦 Tamanho M - R$ {{ cardapio.tamanho_m }}</label>
+            <label><input type="radio" name="tamanho" value="Marmita G" data-preco="{{ cardapio.tamanho_g }}" onclick="atualizarTotal()"> 📦 Tamanho G - R$ {{ cardapio.tamanho_g }}</label>
         </div>
 
         <!-- 2. ESCOLHA A CARNE -->
         <div class="section">
             <h4>2. Escolha a Carne</h4>
-            <label><input type="radio" name="carne" value="Linguiça de Churrasco" checked> 🍗 Linguiça de Churrasco</label>
-            <label><input type="radio" name="carne" value="Bife de Porco"> 🥩 Bife de Porco</label>
-            <label><input type="radio" name="carne" value="Bife de Frango"> 🍗 Bife de Frango</label>
-            <label><input type="radio" name="carne" value="Franguinho Crocante"> 🍗 Franguinho Crocante</label>
-            <label><input type="radio" name="carne" value="Omelete Recheado"> 🍳 Omelete Recheado</label>
+            {% for carne in cardapio.carnes %}
+            <label><input type="radio" name="carne" value="{{ carne }}" {% if loop.first %}checked{% endif %}> 🥩 {{ carne }}</label>
+            {% endfor %}
         </div>
-
-        <!-- 3. DADOS DE ENTREGA -->
-        <div class="section">
-            <h4>3. Dados de Entrega</h4>
-            <label>Seu Nome:</label>
-            <input type="text" id="nome" placeholder="Digite seu nome" required>
-
-            <label>Endereço Completo:</label>
-            <input type="text" id="endereco" placeholder="Rua, Número, Bairro" required>
-
-            <label>Forma de Pagamento:</label>
-            <select id="pagamento" onchange="verificarPagamento()">
-                <option value="Pix">Pix</option>
-                <option value="Cartão na Entrega">Cartão na Entrega</option>
-                <option value="Dinheiro">Dinheiro</option>
-            </select>
-
-            <div id="divTroco" class="campo-troco">
-                <label>Precisa de troco para quanto?</label>
-                <input type="text" id="troco" placeholder="Ex: Troco para R$ 50,00">
-            </div>
-        </div>
-
-        <!-- EXIBIÇÃO DO TOTAL -->
-        <div class="total-box" id="boxTotal">
-            Total do Pedido: R$ 20,00
-        </div>
-
-        <button type="button" class="btn-pedir" onclick="enviarWhatsApp()">Fazer Pedido pelo WhatsApp</button>
-    </form>
-</div>
-
-<script>
-    function atualizarTotal() {
-        let radios = document.getElementsByName('tamanho');
-        let preco = 20;
-        for (let r of radios) {
-            if (r.checked) {
-                preco = r.getAttribute('data-preco');
-                break;
-            }
-        }
-        document.getElementById('boxTotal').innerText = "Total do Pedido: R$ " + preco + ",00";
-        return preco;
-    }
-
-    function verificarPagamento() {
-        let pagamento = document.getElementById('pagamento').value;
-        let divTroco = document.getElementById('divTroco');
-        if (pagamento === 'Dinheiro') {
-            divTroco.style.display = 'block';
-        } else {
-            divTroco.style.display = 'none';
-        }
-    }
-
-    function enviarWhatsApp() {
-        let nome = document.getElementById('nome').value;
-        let endereco = document.getElementById('endereco').value;
-        let pagamento = document.getElementById('pagamento').value;
-        let troco = document.getElementById('troco').value;
-        
-        let tamanho = document.querySelector('input[name="tamanho"]:checked').value;
-        let carne = document.querySelector('input[name="carne"]:checked').value;
-        let total = atualizarTotal();
-
-        if (!nome || !endereco) {
-            alert("Por favor, preencha seu nome e endereço!");
-            return;
-        }
-
-        let mensagem = `*NOVO PEDIDO - NOGUEIRA DELIVERY*\n\n`;
-        mensagem += `👤 *Cliente:* ${nome}\n`;
-        mensagem += `📍 *Endereço:* ${endereco}\n\n`;
-        mensagem += `📦 *Item:* ${tamanho}\n`;
-        mensagem += `🥩 *Carne Escolhida:* ${carne}\n`;
-        mensagem += `💳 *Pagamento:* ${pagamento}\n`;
-
-        if (pagamento === 'Dinheiro' && troco) {
-            mensagem += `💵 *Troco para:* ${troco}\n`;
-        }
-
-        mensagem += `\n💰 *VALOR TOTAL:* R$ ${total},00`;
-
-        // Insira o número do WhatsApp com DDD (Ex: 5528999999999)
-        let numeroWhatsApp = "5528999999999"; 
-        let url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
-        
-        window.open(url, '_blank');
-    }
-</script>
-
-</body>
-</html>
