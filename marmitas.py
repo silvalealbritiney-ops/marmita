@@ -5,22 +5,40 @@ from supabase import create_client, Client
 app = Flask(__name__)
 
 SUPABASE_URL = "https://dbxntyryjmwrrelpcqnt.supabase.co"
-# Cole sua chave Publishable Key completa aqui dentro das aspas:
 SUPABASE_KEY = "sb_publishable_cvk2Fm5Y3kzAA6r3_9VoHw_teWU5-Sv"
 
-# Estrutura padrão para o site NUNCA quebrar quando o banco estiver vazio
-CARDAPIO_PADRAO = {
-    "pratos": [],
-    "marmitas": {"M": 0, "G": 0},
-    "carnes": [],
-    "guarnicoes": [],
-    "bairros": [],
-    "pix": {"chave": "", "titular": ""},
-    "whatsapp": "",
-    "especiais": {"ativo": False, "itens": []},
-    "casa": {"ativo": False, "itens": []}
+# Estrutura padrão exata que você definiu
+DADOS_PADRAO = {
+    "chave_pix": "03178142738 - Edeildo",
+    "whatsapp": "5528988158678",
+    "especiais": {
+        "ativo": True,
+        "preco_m": "22,00",
+        "preco_g": "25,00",
+        "carnes": ["Filet Mignon", "Picanha na Chapa"],
+        "guarnicoes": ["Arroz Soltinho", "Feijão Tropeiro", "Batata Frita", "Salada"]
+    },
+    "casa": {
+        "ativo": True,
+        "preco_m": "18,00",
+        "preco_g": "20,00",
+        "carnes": ["Bife Acebolado", "Frango Grelhado", "Linguiça"],
+        "guarnicoes": ["Arroz", "Feijão", "Macarrão", "Salada"]
+    },
+    "pratos_casa": [
+        {"nome": "Filé à Parmegiana", "preco_m": "25,00", "preco_g": "28,00"},
+        {"nome": "Strogonoff de Frango", "preco_m": "20,00", "preco_g": "23,00"}
+    ],
+    "bebidas": [
+        {"nome": "Coca-Cola Lata 350ml", "preco": "6,00"},
+        {"nome": "Guaraná 2 Litros", "preco": "12,00"}
+    ],
+    "sobremesas": [
+        {"nome": "Pudim de Leite Condensado", "preco": "8,00"}
+    ]
 }
 
+# Conexão com Supabase
 try:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 except Exception as e:
@@ -29,20 +47,18 @@ except Exception as e:
 
 def carregar_cardapio():
     if not supabase:
-        return CARDAPIO_PADRAO
+        return DADOS_PADRAO
     try:
         response = supabase.table("cardapio").select("dados").eq("id", 1).execute()
         if response.data and len(response.data) > 0:
-            dados = response.data[0]["dados"]
-            # Garante que chaves que faltarem sejam preenchidas
-            for chave, valor in CARDAPIO_PADRAO.items():
-                if chave not in dados:
-                    dados[chave] = valor
-            return dados
-        return CARDAPIO_PADRAO
+            return response.data[0]["dados"]
+        else:
+            # Se a tabela tiver vazia, grava o padrão inicial
+            salvar_cardapio(DADOS_PADRAO)
+            return DADOS_PADRAO
     except Exception as e:
         print("Erro ao carregar do Supabase:", e)
-        return CARDAPIO_PADRAO
+        return DADOS_PADRAO
 
 def salvar_cardapio(dados):
     if not supabase:
@@ -64,14 +80,13 @@ def admin():
     cardapio = carregar_cardapio()
     return render_template('admin.html', cardapio=cardapio)
 
-@app.route('/api/salvar', methods=['POST'])
 @app.route('/api/salvar-cardapio', methods=['POST'])
-def salvar():
-    novos_dados = request.get_json()
-    if salvar_cardapio(novos_dados):
-        return jsonify({"status": "sucesso", "mensagem": "Cardápio salvo com sucesso no Supabase!"})
+def api_salvar_cardapio():
+    dados = request.json
+    if salvar_cardapio(dados):
+        return jsonify({"status": "sucesso"})
     else:
-        return jsonify({"status": "erro", "mensagem": "Erro ao salvar no banco."}), 500
+        return jsonify({"status": "erro"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
