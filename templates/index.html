@@ -347,8 +347,11 @@
 
         msg += `\n💰 *VALOR TOTAL:* R$ ${formatPreco(total)}`;
 
-        let numWhats = "{{ cardapio.whatsapp }}";
-        let url = `https://wa.me/${numWhats}?text=${encodeURIComponent(msg)}`;
+        // Remove tudo que não for número (espaços, traços, parênteses)
+        let numWhats = "{{ cardapio.whatsapp }}".replace(/\D/g, ''); 
+        
+        // Link padronizado da API do WhatsApp
+        let url = `https://api.whatsapp.com/send?phone=${numWhats}&text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
     }
 </script>
