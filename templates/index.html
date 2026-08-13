@@ -1,14 +1,357 @@
-<!-- 1. ESCOLHA O TAMANHO -->
-        <div class="section">
-            <h4>1. Escolha o Tamanho</h4>
-            <label><input type="radio" name="tamanho" value="Marmita M" data-preco="{{ cardapio.tamanho_m }}" onclick="atualizarTotal()" checked> 📦 Tamanho M - R$ {{ cardapio.tamanho_m }}</label>
-            <label><input type="radio" name="tamanho" value="Marmita G" data-preco="{{ cardapio.tamanho_g }}" onclick="atualizarTotal()"> 📦 Tamanho G - R$ {{ cardapio.tamanho_g }}</label>
-        </div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nogueira Delivery - Marmitex</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { max-width: 500px; width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .logo { display: block; margin: 0 auto 10px; max-width: 90px; border-radius: 50%; border: 3px solid #d32f2f; }
+        h1 { color: #d32f2f; text-align: center; margin: 0; font-size: 22px; }
+        h3 { text-align: center; color: #555; margin: 0 0 20px 0; font-size: 14px; }
+        
+        .card { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 20px; }
+        .card h4 { margin: 0 0 10px 0; color: #2e7d32; border-bottom: 2px solid #c8e6c9; padding-bottom: 5px; font-size: 16px; }
+        
+        label { display: block; margin: 6px 0; font-size: 14px; cursor: pointer; }
+        input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; font-size: 14px; }
 
-        <!-- 2. ESCOLHA A CARNE -->
-        <div class="section">
-            <h4>2. Escolha a Carne</h4>
-            {% for carne in cardapio.carnes %}
-            <label><input type="radio" name="carne" value="{{ carne }}" {% if loop.first %}checked{% endif %}> 🥩 {{ carne }}</label>
+        .btn-add-item { background: #0288d1; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* CARRINHO */
+        .carrinho-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .carrinho-box h4 { margin: 0 0 10px 0; color: #856404; }
+        .item-carrinho { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding: 8px 0; font-size: 13px; }
+        .btn-del-cart { background: #d32f2f; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; margin-left: 5px; }
+
+        .total-destaque { font-size: 18px; font-weight: bold; color: #d32f2f; text-align: right; margin-top: 10px; }
+
+        .btn-finalizar { background-color: #25d366; color: white; padding: 16px; width: 100%; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        /* MODAL PIX */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; }
+        .chave-pix { background: #eee; padding: 10px; font-weight: bold; word-break: break-all; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="{{ url_for('static', filename='logo.png') }}" class="logo" alt="Logo">
+    <h1>NOGUEIRA DELIVERY</h1>
+    <h3>MARMITEX</h3>
+
+    <!-- MARMITAS ESPECIAIS -->
+    {% if cardapio.especiais.ativo %}
+    <div class="card">
+        <h4>⭐ MARMITAS ESPECIAIS</h4>
+        <label>Tamanho:</label>
+        <select id="esp_tam">
+            <option value="Marmita Especial M" data-preco="{{ cardapio.especiais.preco_m }}">Tamanho M - R$ {{ cardapio.especiais.preco_m }}</option>
+            <option value="Marmita Especial G" data-preco="{{ cardapio.especiais.preco_g }}">Tamanho G - R$ {{ cardapio.especiais.preco_g }}</option>
+        </select>
+
+        <label>Escolha 1 Carne:</label>
+        <select id="esp_carne">
+            {% for c in cardapio.especiais.carnes %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Guarnições (marque as que deseja):</label>
+        <div id="esp_guarnicoes">
+            {% for g in cardapio.especiais.guarnicoes %}
+            <label><input type="checkbox" value="{{ g }}" checked> {{ g }}</label>
             {% endfor %}
         </div>
+
+        <button class="btn-add-item" onclick="addMarmitaEspecial()">+ Adicionar ao Carrinho</button>
+    </div>
+    {% endif %}
+
+    <!-- MARMITAS DA CASA -->
+    {% if cardapio.casa.ativo %}
+    <div class="card">
+        <h4>🏠 MARMITAS DA CASA</h4>
+        <label>Tamanho:</label>
+        <select id="casa_tam">
+            <option value="Marmita da Casa M" data-preco="{{ cardapio.casa.preco_m }}">Tamanho M - R$ {{ cardapio.casa.preco_m }}</option>
+            <option value="Marmita da Casa G" data-preco="{{ cardapio.casa.preco_g }}">Tamanho G - R$ {{ cardapio.casa.preco_g }}</option>
+        </select>
+
+        <label>Escolha 1 Carne:</label>
+        <select id="casa_carne">
+            {% for c in cardapio.casa.carnes %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Guarnições (marque as que deseja):</label>
+        <div id="casa_guarnicoes">
+            {% for g in cardapio.casa.guarnicoes %}
+            <label><input type="checkbox" value="{{ g }}" checked> {{ g }}</label>
+            {% endfor %}
+        </div>
+
+        <button class="btn-add-item" onclick="addMarmitaCasa()">+ Adicionar ao Carrinho</button>
+    </div>
+    {% endif %}
+
+    <!-- PRATOS DA CASA -->
+    {% if cardapio.pratos_casa %}
+    <div class="card">
+        <h4>🍲 PRATOS DA CASA</h4>
+        <label>Escolha o Prato:</label>
+        <select id="prato_sel" onchange="atualizarOpcoesPrato()">
+            {% for p in cardapio.pratos_casa %}
+            <option value="{{ p.nome }}" data-m="{{ p.preco_m }}" data-g="{{ p.preco_g }}">{{ p.nome }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Tamanho:</label>
+        <select id="prato_tam"></select>
+
+        <button class="btn-add-item" onclick="addPratoCasa()">+ Adicionar ao Carrinho</button>
+    </div>
+    {% endif %}
+
+    <!-- BEBIDAS -->
+    {% if cardapio.bebidas %}
+    <div class="card">
+        <h4>🥤 BEBIDAS</h4>
+        <select id="bebida_sel">
+            {% for b in cardapio.bebidas %}
+            <option value="{{ b.nome }}" data-preco="{{ b.preco }}">{{ b.nome }} - R$ {{ b.preco }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn-add-item" onclick="addBebida()">+ Adicionar Bebida</button>
+    </div>
+    {% endif %}
+
+    <!-- SOBREMESAS -->
+    {% if cardapio.sobremesas %}
+    <div class="card">
+        <h4>🍰 SOBREMESAS</h4>
+        <select id="sob_sel">
+            {% for s in cardapio.sobremesas %}
+            <option value="{{ s.nome }}" data-preco="{{ s.preco }}">{{ s.nome }} - R$ {{ s.preco }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn-add-item" onclick="addSobremesa()">+ Adicionar Sobremesa</button>
+    </div>
+    {% endif %}
+
+    <!-- CARRINHO -->
+    <div class="carrinho-box">
+        <h4>🛒 SEU CARRINHO DE COMPRAS</h4>
+        <div id="itensCarrinho">
+            <p style="color:#777; font-size:13px;" id="cartVazio">Nenhum item adicionado ainda.</p>
+        </div>
+        <div class="total-destaque" id="totalPedido">Total: R$ 0,00</div>
+    </div>
+
+    <!-- DADOS DE ENTREGA -->
+    <div class="card">
+        <h4>📍 DADOS DE ENTREGA</h4>
+        <input type="text" id="nome" placeholder="Seu Nome Completo *" required>
+        <input type="text" id="telefone" placeholder="Seu Número WhatsApp *" required>
+        <input type="text" id="bairro" placeholder="Bairro *" required>
+        <input type="text" id="rua" placeholder="Rua *" required>
+        <input type="text" id="numero" placeholder="Número *" required>
+        <input type="text" id="referencia" placeholder="Ponto de Referência *" required>
+        <input type="text" id="complemento" placeholder="Complemento *" required>
+
+        <label>Forma de Pagamento:</label>
+        <select id="pagamento" onchange="verificarPagamento()">
+            <option value="Pix">Pix (Online)</option>
+            <option value="Cartão de Crédito na Entrega">Cartão de Crédito na Entrega</option>
+            <option value="Cartão de Débito na Entrega">Cartão de Débito na Entrega</option>
+            <option value="Dinheiro">Dinheiro</option>
+        </select>
+
+        <div id="divTroco" style="display:none;">
+            <input type="text" id="troco" placeholder="Troco para quanto? Ex: R$ 50,00">
+        </div>
+    </div>
+
+    <button class="btn-finalizar" onclick="iniciarFinalizacao()">FAZER PEDIDO PELO WHATSAPP</button>
+</div>
+
+<!-- MODAL PIX -->
+<div class="modal" id="modalPix">
+    <div class="modal-content">
+        <h3>💰 Pagamento via Pix</h3>
+        <p>Realize o pagamento para a chave abaixo e envie o comprovante no WhatsApp:</p>
+        <div class="chave-pix" id="chavePixTexto">{{ cardapio.chave_pix }}</div>
+        <button class="btn-finalizar" onclick="enviarWhatsAppFinal('Pix')">JÁ PAGUEI / ENVIAR PEDIDO</button>
+    </div>
+</div>
+
+<script>
+    let carrinho = [];
+
+    function parsePreco(v) { return parseFloat(v.replace(',', '.')); }
+    function formatPreco(v) { return v.toFixed(2).replace('.', ','); }
+
+    function addMarmitaEspecial() {
+        let selTam = document.getElementById('esp_tam');
+        let preco = parsePreco(selTam.options[selTam.selectedIndex].getAttribute('data-preco'));
+        let tam = selTam.value;
+        let carne = document.getElementById('esp_carne').value;
+        
+        let guar = [];
+        document.querySelectorAll('#esp_guarnicoes input:checked').forEach(c => guar.push(c.value));
+
+        let desc = `${tam} (${carne}) - Guarnições: ${guar.join(', ')}`;
+        carrinho.push({nome: desc, preco: preco});
+        atualizarCarrinho();
+    }
+
+    function addMarmitaCasa() {
+        let selTam = document.getElementById('casa_tam');
+        let preco = parsePreco(selTam.options[selTam.selectedIndex].getAttribute('data-preco'));
+        let tam = selTam.value;
+        let carne = document.getElementById('casa_carne').value;
+        
+        let guar = [];
+        document.querySelectorAll('#casa_guarnicoes input:checked').forEach(c => guar.push(c.value));
+
+        let desc = `${tam} (${carne}) - Guarnições: ${guar.join(', ')}`;
+        carrinho.push({nome: desc, preco: preco});
+        atualizarCarrinho();
+    }
+
+    function atualizarOpcoesPrato() {
+        let sel = document.getElementById('prato_sel');
+        if(!sel) return;
+        let opt = sel.options[sel.selectedIndex];
+        let m = opt.getAttribute('data-m');
+        let g = opt.getAttribute('data-g');
+        
+        let tamSel = document.getElementById('prato_tam');
+        tamSel.innerHTML = `
+            <option value="M" data-preco="${m}">Tamanho M - R$ ${m}</option>
+            <option value="G" data-preco="${g}">Tamanho G - R$ ${g}</option>
+        `;
+    }
+    atualizarOpcoesPrato();
+
+    function addPratoCasa() {
+        let sel = document.getElementById('prato_sel');
+        let prato = sel.value;
+        let tamSel = document.getElementById('prato_tam');
+        let tam = tamSel.value;
+        let preco = parsePreco(tamSel.options[tamSel.selectedIndex].getAttribute('data-preco'));
+
+        carrinho.push({nome: `${prato} (Tamanho ${tam})`, preco: preco});
+        atualizarCarrinho();
+    }
+
+    function addBebida() {
+        let sel = document.getElementById('bebida_sel');
+        let opt = sel.options[sel.selectedIndex];
+        carrinho.push({nome: opt.value, preco: parsePreco(opt.getAttribute('data-preco'))});
+        atualizarCarrinho();
+    }
+
+    function addSobremesa() {
+        let sel = document.getElementById('sob_sel');
+        let opt = sel.options[sel.selectedIndex];
+        carrinho.push({nome: opt.value, preco: parsePreco(opt.getAttribute('data-preco'))});
+        atualizarCarrinho();
+    }
+
+    function removerCart(idx) {
+        carrinho.splice(idx, 1);
+        atualizarCarrinho();
+    }
+
+    function atualizarCarrinho() {
+        let div = document.getElementById('itensCarrinho');
+        let total = 0;
+        if(carrinho.length === 0) {
+            div.innerHTML = '<p style="color:#777; font-size:13px;">Nenhum item adicionado ainda.</p>';
+        } else {
+            div.innerHTML = '';
+            carrinho.forEach((item, idx) => {
+                total += item.preco;
+                div.innerHTML += `
+                    <div class="item-carrinho">
+                        <span>${item.nome} - <b>R$ ${formatPreco(item.preco)}</b></span>
+                        <button class="btn-del-cart" onclick="removerCart(${idx})">X</button>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById('totalPedido').innerText = `Total: R$ ${formatPreco(total)}`;
+    }
+
+    function verificarPagamento() {
+        let pag = document.getElementById('pagamento').value;
+        document.getElementById('divTroco').style.display = (pag === 'Dinheiro') ? 'block' : 'none';
+    }
+
+    function iniciarFinalizacao() {
+        if(carrinho.length === 0) {
+            alert('Adicione pelo menos um item ao seu carrinho!');
+            return;
+        }
+
+        let campos = ['nome', 'telefone', 'bairro', 'rua', 'numero', 'referencia', 'complemento'];
+        for(let c of campos) {
+            if(!document.getElementById(c).value.trim()) {
+                alert('Por favor, preencha todos os campos obrigatórios do endereço e contato!');
+                return;
+            }
+        }
+
+        let pag = document.getElementById('pagamento').value;
+        if(pag === 'Pix') {
+            document.getElementById('modalPix').style.display = 'flex';
+        } else {
+            enviarWhatsAppFinal(pag);
+        }
+    }
+
+    function enviarWhatsAppFinal(formaPagamento) {
+        let nome = document.getElementById('nome').value;
+        let fone = document.getElementById('telefone').value;
+        let bairro = document.getElementById('bairro').value;
+        let rua = document.getElementById('rua').value;
+        let num = document.getElementById('numero').value;
+        let ref = document.getElementById('referencia').value;
+        let comp = document.getElementById('complemento').value;
+        let troco = document.getElementById('troco').value;
+
+        let msg = `*NOVO PEDIDO - NOGUEIRA DELIVERY*\n\n`;
+        msg += `👤 *Cliente:* ${nome}\n`;
+        msg += `📞 *Contato:* ${fone}\n\n`;
+        msg += `📍 *ENDEREÇO DE ENTREGA:*\n`;
+        msg += `Rua: ${rua}, Nº ${num}\n`;
+        msg += `Bairro: ${bairro}\n`;
+        msg += `Complemento: ${comp}\n`;
+        msg += `Ponto de Ref.: ${ref}\n\n`;
+
+        msg += `🛒 *ITENS DO PEDIDO:*\n`;
+        let total = 0;
+        carrinho.forEach(item => {
+            total += item.preco;
+            msg += `• ${item.nome} (R$ ${formatPreco(item.preco)})\n`;
+        });
+
+        msg += `\n💳 *Pagamento:* ${formaPagamento}\n`;
+        if(formaPagamento === 'Dinheiro' && troco) {
+            msg += `💵 *Troco para:* ${troco}\n`;
+        }
+
+        msg += `\n💰 *VALOR TOTAL:* R$ ${formatPreco(total)}`;
+
+        let numWhats = "{{ cardapio.whatsapp }}";
+        let url = `https://wa.me/${numWhats}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+    }
+</script>
+
+</body>
+</html>

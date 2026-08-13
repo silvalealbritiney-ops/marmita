@@ -5,95 +5,230 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel da Mamãe - Nogueira Delivery</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 15px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #d32f2f; margin-bottom: 15px; text-align: center; }
-        .grupo { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        label { font-weight: bold; display: block; margin-top: 8px; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
-        .item-carne { display: flex; gap: 8px; margin-top: 8px; }
-        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; }
-        .btn-add { background: #0288d1; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .btn-del { background: #d32f2f; color: white; border: none; padding: 5px 10px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .link-site { text-align: center; display: block; margin-bottom: 15px; color: #0288d1; text-decoration: none; font-weight: bold; }
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 15px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #d32f2f; text-align: center; }
+        .secao { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .secao h3 { color: #2e7d32; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        label { font-weight: bold; display: block; margin-top: 10px; font-size: 14px; }
+        input[type="text"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .linha { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+        .btn-add { background: #0288d1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-del { background: #d32f2f; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; position: sticky; bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <a href="/" class="link-site">⬅ Ver o Site do Cliente</a>
+    <a href="/" style="display:block; text-align:center; margin-bottom:15px; font-weight:bold; color:#0288d1; text-decoration:none;">⬅ Ver o Site do Cliente</a>
     <h2>Painel da Mamãe 👵❤️</h2>
-    <p style="text-align: center; color: #666;">Altere o cardápio do dia de forma simples:</p>
 
-    <div class="grupo">
-        <h3>💰 Preços das Marmitas</h3>
-        <label>Preço da Marmita M (R$):</label>
-        <input type="text" id="tamanho_m" value="{{ cardapio.tamanho_m }}">
-
-        <label>Preço da Marmita G (R$):</label>
-        <input type="text" id="tamanho_g" value="{{ cardapio.tamanho_g }}">
+    <!-- CONFIGURAÇÕES GERAIS -->
+    <div class="secao">
+        <h3>⚙️ Configurações Gerais</h3>
+        <label>Chave Pix:</label>
+        <input type="text" id="chave_pix" value="{{ cardapio.chave_pix }}">
+        <label>WhatsApp para Receber Pedidos (com DDD, ex: 5528999999999):</label>
+        <input type="text" id="whatsapp" value="{{ cardapio.whatsapp }}">
     </div>
 
-    <div class="grupo">
-        <h3>🥩 Carnes do Dia</h3>
-        <div id="listaCarnes">
-            {% for carne in cardapio.carnes %}
-            <div class="item-carne">
-                <input type="text" class="input-carne" value="{{ carne }}">
-                <button type="button" class="btn-del" onclick="removerCarne(this)">X</button>
+    <!-- MARMITAS ESPECIAIS -->
+    <div class="secao">
+        <h3>⭐ Marmitas Especiais</h3>
+        <label><input type="checkbox" id="esp_ativo" {% if cardapio.especiais.ativo %}checked{% endif %}> Mostrar esta categoria no site</label>
+        <div class="linha">
+            <div><label>Preço M (R$):</label><input type="text" id="esp_m" value="{{ cardapio.especiais.preco_m }}"></div>
+            <div><label>Preço G (R$):</label><input type="text" id="esp_g" value="{{ cardapio.especiais.preco_g }}"></div>
+        </div>
+        
+        <label>Carnes Especiais:</label>
+        <div id="lista_esp_carnes">
+            {% for c in cardapio.especiais.carnes %}
+            <div class="linha"><input type="text" class="esp_carne" value="{{ c }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
+            {% endfor %}
+        </div>
+        <button class="btn-add" onclick="addLinha('lista_esp_carnes', 'esp_carne', 'Nome da carne')">+ Adicionar Carne</button>
+
+        <label>Guarnições Especiais:</label>
+        <div id="lista_esp_guarnicoes">
+            {% for g in cardapio.especiais.guarnicoes %}
+            <div class="linha"><input type="text" class="esp_guarnicao" value="{{ g }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
+            {% endfor %}
+        </div>
+        <button class="btn-add" onclick="addLinha('lista_esp_guarnicoes', 'esp_guarnicao', 'Nome da guarnição')">+ Adicionar Guarnição</button>
+    </div>
+
+    <!-- MARMITAS DA CASA -->
+    <div class="secao">
+        <h3>🏠 Marmitas da Casa</h3>
+        <label><input type="checkbox" id="casa_ativo" {% if cardapio.casa.ativo %}checked{% endif %}> Mostrar esta categoria no site</label>
+        <div class="linha">
+            <div><label>Preço M (R$):</label><input type="text" id="casa_m" value="{{ cardapio.casa.preco_m }}"></div>
+            <div><label>Preço G (R$):</label><input type="text" id="casa_g" value="{{ cardapio.casa.preco_g }}"></div>
+        </div>
+        
+        <label>Carnes da Casa:</label>
+        <div id="lista_casa_carnes">
+            {% for c in cardapio.casa.carnes %}
+            <div class="linha"><input type="text" class="casa_carne" value="{{ c }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
+            {% endfor %}
+        </div>
+        <button class="btn-add" onclick="addLinha('lista_casa_carnes', 'casa_carne', 'Nome da carne')">+ Adicionar Carne</button>
+
+        <label>Guarnições da Casa:</label>
+        <div id="lista_casa_guarnicoes">
+            {% for g in cardapio.casa.guarnicoes %}
+            <div class="linha"><input type="text" class="casa_guarnicao" value="{{ g }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
+            {% endfor %}
+        </div>
+        <button class="btn-add" onclick="addLinha('lista_casa_guarnicoes', 'casa_guarnicao', 'Nome da guarnição')">+ Adicionar Guarnição</button>
+    </div>
+
+    <!-- PRATOS DA CASA -->
+    <div class="secao">
+        <h3>🍲 Pratos da Casa (Ex: Parmegiana, Strogonoff)</h3>
+        <div id="lista_pratos">
+            {% for p in cardapio.pratos_casa %}
+            <div class="linha item-prato">
+                <input type="text" class="prato_nome" placeholder="Nome do Prato" value="{{ p.nome }}">
+                <input type="text" class="prato_m" placeholder="R$ M" value="{{ p.preco_m }}" style="width:70px;">
+                <input type="text" class="prato_g" placeholder="R$ G" value="{{ p.preco_g }}" style="width:70px;">
+                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
             </div>
             {% endfor %}
         </div>
-        <button type="button" class="btn-add" onclick="adicionarCarne()">+ Adicionar Outra Carne</button>
+        <button class="btn-add" onclick="addPrato()">+ Adicionar Prato Especial</button>
     </div>
 
-    <button type="button" class="btn-salvar" onclick="salvarGeral()">💾 SALVAR CARDÁPIO</button>
+    <!-- BEBIDAS -->
+    <div class="secao">
+        <h3>🥤 Bebidas</h3>
+        <div id="lista_bebidas">
+            {% for b in cardapio.bebidas %}
+            <div class="linha item-bebida">
+                <input type="text" class="bebida_nome" placeholder="Nome da Bebida" value="{{ b.nome }}">
+                <input type="text" class="bebida_preco" placeholder="Preço R$" value="{{ b.preco }}" style="width:90px;">
+                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="btn-add" onclick="addBebida()">+ Adicionar Bebida</button>
+    </div>
+
+    <!-- SOBREMESAS -->
+    <div class="secao">
+        <h3>🍰 Sobremesas</h3>
+        <div id="lista_sobremesas">
+            {% for s in cardapio.sobremesas %}
+            <div class="linha item-sobremesa">
+                <input type="text" class="sob_nome" placeholder="Nome da Sobremesa" value="{{ s.nome }}">
+                <input type="text" class="sob_preco" placeholder="Preço R$" value="{{ s.preco }}" style="width:90px;">
+                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="btn-add" onclick="addSobremesa()">+ Adicionar Sobremesa</button>
+    </div>
+
+    <button class="btn-salvar" onclick="salvarTudo()">💾 SALVAR TUDO NO SITE</button>
 </div>
 
 <script>
-    function adicionarCarne() {
-        let container = document.getElementById('listaCarnes');
+    function addLinha(containerId, classe, placeholder) {
+        let cont = document.getElementById(containerId);
         let div = document.createElement('div');
-        div.className = 'item-carne';
-        div.innerHTML = `
-            <input type="text" class="input-carne" placeholder="Nome da carne">
-            <button type="button" class="btn-del" onclick="removerCarne(this)">X</button>
-        `;
-        container.appendChild(div);
+        div.className = 'linha';
+        div.innerHTML = `<input type="text" class="${classe}" placeholder="${placeholder}"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+        cont.appendChild(div);
     }
 
-    function removerCarne(btn) {
-        btn.parentElement.remove();
+    function addPrato() {
+        let cont = document.getElementById('lista_pratos');
+        let div = document.createElement('div');
+        div.className = 'linha item-prato';
+        div.innerHTML = `<input type="text" class="prato_nome" placeholder="Nome do Prato"><input type="text" class="prato_m" placeholder="R$ M" style="width:70px;"><input type="text" class="prato_g" placeholder="R$ G" style="width:70px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+        cont.appendChild(div);
     }
 
-    function salvarGeral() {
-        let inputs = document.querySelectorAll('.input-carne');
-        let carnes = [];
-        inputs.forEach(i => {
-            if (i.value.trim() !== '') carnes.push(i.value.trim());
+    function addBebida() {
+        let cont = document.getElementById('lista_bebidas');
+        let div = document.createElement('div');
+        div.className = 'linha item-bebida';
+        div.innerHTML = `<input type="text" class="bebida_nome" placeholder="Nome da Bebida"><input type="text" class="bebida_preco" placeholder="Preço R$" style="width:90px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+        cont.appendChild(div);
+    }
+
+    function addSobremesa() {
+        let cont = document.getElementById('lista_sobremesas');
+        let div = document.createElement('div');
+        div.className = 'linha item-sobremesa';
+        div.innerHTML = `<input type="text" class="sob_nome" placeholder="Nome da Sobremesa"><input type="text" class="sob_preco" placeholder="Preço R$" style="width:90px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+        cont.appendChild(div);
+    }
+
+    function pegarValores(classe) {
+        let res = [];
+        document.querySelectorAll('.' + classe).forEach(i => {
+            if(i.value.trim() !== '') res.push(i.value.trim());
+        });
+        return res;
+    }
+
+    function salvarTudo() {
+        let pratos = [];
+        document.querySelectorAll('.item-prato').forEach(el => {
+            let n = el.querySelector('.prato_nome').value;
+            let m = el.querySelector('.prato_m').value;
+            let g = el.querySelector('.prato_g').value;
+            if(n) pratos.push({nome: n, preco_m: m, preco_g: g});
+        });
+
+        let bebidas = [];
+        document.querySelectorAll('.item-bebida').forEach(el => {
+            let n = el.querySelector('.bebida_nome').value;
+            let p = el.querySelector('.bebida_preco').value;
+            if(n) bebidas.push({nome: n, preco: p});
+        });
+
+        let sobremesas = [];
+        document.querySelectorAll('.item-sobremesa').forEach(el => {
+            let n = el.querySelector('.sob_nome').value;
+            let p = el.querySelector('.sob_preco').value;
+            if(n) sobremesas.push({nome: n, preco: p});
         });
 
         let dados = {
-            tamanho_m: document.getElementById('tamanho_m').value,
-            tamanho_g: document.getElementById('tamanho_g').value,
-            carnes: carnes
+            chave_pix: document.getElementById('chave_pix').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            especiais: {
+                ativo: document.getElementById('esp_ativo').checked,
+                preco_m: document.getElementById('esp_m').value,
+                preco_g: document.getElementById('esp_g').value,
+                carnes: pegarValores('esp_carne'),
+                guarnicoes: pegarValores('esp_guarnicao')
+            },
+            casa: {
+                ativo: document.getElementById('casa_ativo').checked,
+                preco_m: document.getElementById('casa_m').value,
+                preco_g: document.getElementById('casa_g').value,
+                carnes: pegarValores('casa_carne'),
+                guarnicoes: pegarValores('casa_guarnicao')
+            },
+            pratos_casa: pratos,
+            bebidas: bebidas,
+            sobremesas: sobremesas
         };
 
         fetch('/api/salvar-cardapio', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(dados)
         })
-        .then(res => res.json())
-        .then(data => {
-            alert('✅ Cardápio atualizado com sucesso!');
-            window.location.reload();
-        })
-        .catch(err => {
-            alert('❌ Erro ao salvar!');
-        });
+        .then(r => r.json())
+        .then(d => { alert('✅ Cardápio e preços atualizados com sucesso!'); location.reload(); })
+        .catch(e => alert('❌ Erro ao salvar!'));
     }
 </script>
-
 </body>
 </html>
