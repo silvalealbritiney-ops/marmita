@@ -25,7 +25,8 @@
         .item-carrinho { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding: 8px 0; font-size: 13px; }
         .btn-del-cart { background: #d32f2f; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; margin-left: 5px; }
 
-        .total-destaque { font-size: 18px; font-weight: bold; color: #d32f2f; text-align: right; margin-top: 10px; }
+        .linha-resumo { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px; color: #555; }
+        .total-destaque { font-size: 18px; font-weight: bold; color: #d32f2f; text-align: right; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 8px; }
 
         .btn-finalizar { background-color: #25d366; color: white; padding: 16px; width: 100%; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
 
@@ -40,7 +41,7 @@
 <div class="container">
     <img src="{{ url_for('static', filename='logo.png') }}" class="logo" alt="Logo">
     <h1>NOGUEIRA DELIVERY</h1>
-    <h3>MARMITEX</h3>
+    <h3>MARMITEX - GUAÇUÍ</h3>
 
     <!-- MARMITAS ESPECIAIS -->
     {% if cardapio.especiais.ativo %}
@@ -148,7 +149,12 @@
         <div id="itensCarrinho">
             <p style="color:#777; font-size:13px;" id="cartVazio">Nenhum item adicionado ainda.</p>
         </div>
-        <div class="total-destaque" id="totalPedido">Total: R$ 0,00</div>
+        
+        <div id="resumoValores" style="margin-top: 10px;">
+            <div class="linha-resumo"><span>Subtotal Itens:</span> <span id="subtotalCart">R$ 0,00</span></div>
+            <div class="linha-resumo"><span>Taxa de Entrega:</span> <span id="taxaCart">R$ 0,00</span></div>
+            <div class="total-destaque" id="totalPedido">Total: R$ 0,00</div>
+        </div>
     </div>
 
     <!-- DADOS DE ENTREGA -->
@@ -156,7 +162,19 @@
         <h4>📍 DADOS DE ENTREGA</h4>
         <input type="text" id="nome" placeholder="Seu Nome Completo *" required>
         <input type="text" id="telefone" placeholder="Seu Número WhatsApp *" required>
-        <input type="text" id="bairro" placeholder="Bairro *" required>
+
+        <label>Selecione o Bairro em Guaçuí *:</label>
+        <select id="bairro_sel" onchange="atualizarCarrinho()">
+            <option value="" data-taxa="0,00">-- Selecione seu bairro --</option>
+            {% if cardapio.bairros %}
+                {% for b in cardapio.bairros %}
+                <option value="{{ b.nome }}" data-taxa="{{ b.taxa }}">{{ b.nome }} (Taxa: R$ {{ b.taxa }})</option>
+                {% endfor %}
+            {% else %}
+                <option value="Centro" data-taxa="3,00">Centro (Taxa: R$ 3,00)</option>
+            {% endif %}
+        </select>
+
         <input type="text" id="rua" placeholder="Rua *" required>
         <input type="text" id="numero" placeholder="Número *" required>
         <input type="text" id="referencia" placeholder="Ponto de Referência *" required>
@@ -191,7 +209,10 @@
 <script>
     let carrinho = [];
 
-    function parsePreco(v) { return parseFloat(v.replace(',', '.')); }
+    function parsePreco(v) { 
+        if(!v) return 0;
+        return parseFloat(v.toString().replace(',', '.')); 
+    }
     function formatPreco(v) { return v.toFixed(2).replace('.', ','); }
 
     function addMarmitaEspecial() {
@@ -269,13 +290,14 @@
 
     function atualizarCarrinho() {
         let div = document.getElementById('itensCarrinho');
-        let total = 0;
+        let subtotal = 0;
+        
         if(carrinho.length === 0) {
             div.innerHTML = '<p style="color:#777; font-size:13px;">Nenhum item adicionado ainda.</p>';
         } else {
             div.innerHTML = '';
             carrinho.forEach((item, idx) => {
-                total += item.preco;
+                subtotal += item.preco;
                 div.innerHTML += `
                     <div class="item-carrinho">
                         <span>${item.nome} - <b>R$ ${formatPreco(item.preco)}</b></span>
@@ -284,7 +306,19 @@
                 `;
             });
         }
-        document.getElementById('totalPedido').innerText = `Total: R$ ${formatPreco(total)}`;
+
+        // Pega taxa do bairro selecionado
+        let selBairro = document.getElementById('bairro_sel');
+        let taxa = 0;
+        if(selBairro && selBairro.selectedIndex >= 0) {
+            taxa = parsePreco(selBairro.options[selBairro.selectedIndex].getAttribute('data-taxa'));
+        }
+
+        let totalGeral = subtotal + taxa;
+
+        document.getElementById('subtotalCart').innerText = `R$ ${formatPreco(subtotal)}`;
+        document.getElementById('taxaCart').innerText = `R$ ${formatPreco(taxa)}`;
+        document.getElementById('totalPedido').innerText = `Total: R$ ${formatPreco(totalGeral)}`;
     }
 
     function verificarPagamento() {
@@ -298,7 +332,13 @@
             return;
         }
 
-        let campos = ['nome', 'telefone', 'bairro', 'rua', 'numero', 'referencia', 'complemento'];
+        let bairroVal = document.getElementById('bairro_sel').value;
+        if(!bairroVal) {
+            alert('Por favor, selecione o seu bairro para entrega!');
+            return;
+        }
+
+        let campos = ['nome', 'telefone', 'rua', 'numero', 'referencia', 'complemento'];
         for(let c of campos) {
             if(!document.getElementById(c).value.trim()) {
                 alert('Por favor, preencha todos os campos obrigatórios do endereço e contato!');
@@ -317,7 +357,11 @@
     function enviarWhatsAppFinal(formaPagamento) {
         let nome = document.getElementById('nome').value;
         let fone = document.getElementById('telefone').value;
-        let bairro = document.getElementById('bairro').value;
+        
+        let selBairro = document.getElementById('bairro_sel');
+        let bairroNome = selBairro.value;
+        let taxaEntrega = parsePreco(selBairro.options[selBairro.selectedIndex].getAttribute('data-taxa'));
+
         let rua = document.getElementById('rua').value;
         let num = document.getElementById('numero').value;
         let ref = document.getElementById('referencia').value;
@@ -327,25 +371,29 @@
         let msg = `*NOVO PEDIDO - NOGUEIRA DELIVERY*\n\n`;
         msg += `👤 *Cliente:* ${nome}\n`;
         msg += `📞 *Contato:* ${fone}\n\n`;
-        msg += `📍 *ENDEREÇO DE ENTREGA:*\n`;
+        msg += `📍 *ENDEREÇO DE ENTREGA (GUAÇUÍ):*\n`;
         msg += `Rua: ${rua}, Nº ${num}\n`;
-        msg += `Bairro: ${bairro}\n`;
+        msg += `Bairro: ${bairroNome}\n`;
         msg += `Complemento: ${comp}\n`;
         msg += `Ponto de Ref.: ${ref}\n\n`;
 
         msg += `🛒 *ITENS DO PEDIDO:*\n`;
-        let total = 0;
+        let subtotal = 0;
         carrinho.forEach(item => {
-            total += item.preco;
+            subtotal += item.preco;
             msg += `• ${item.nome} (R$ ${formatPreco(item.preco)})\n`;
         });
 
-        msg += `\n💳 *Pagamento:* ${formaPagamento}\n`;
+        let totalFinal = subtotal + taxaEntrega;
+
+        msg += `\n💵 *Subtotal:* R$ ${formatPreco(subtotal)}\n`;
+        msg += `🛵 *Taxa de Entrega (${bairroNome}):* R$ ${formatPreco(taxaEntrega)}\n`;
+        msg += `💰 *VALOR TOTAL:* R$ ${formatPreco(totalFinal)}\n\n`;
+
+        msg += `💳 *Pagamento:* ${formaPagamento}\n`;
         if(formaPagamento === 'Dinheiro' && troco) {
             msg += `💵 *Troco para:* ${troco}\n`;
         }
-
-        msg += `\n💰 *VALOR TOTAL:* R$ ${formatPreco(total)}`;
 
         let numWhats = "{{ cardapio.whatsapp }}".replace(/\D/g, ''); 
         if (!numWhats.startsWith('55')) {

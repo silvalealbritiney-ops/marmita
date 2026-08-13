@@ -20,9 +20,9 @@
         .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px; }
         .btn-gerar-img { background: #ff9800; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; }
 
-        /* ESTILO DO CARDÁPIO QUE VIRA IMAGEM (ESTILO INSTAGRAM/STORY) */
+        /* ESTILO DO CARDÁPIO QUE VIRA IMAGEM */
         #cardapioImagem {
-            display: none; /* Só exibe para capturar */
+            display: none;
             width: 450px;
             background: #ffffff;
             border: 8px solid #d32f2f;
@@ -46,7 +46,12 @@
 
         /* MODAL COM A IMAGEM PRONTA */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 999; }
-        .modal-content { background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 90vh; overflow-y: auto; text-align: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 90%; max-height: 90vh; overflow-y: auto; text-align: center; position: relative; }
+        
+        .btn-fechar-top {
+            position: absolute; top: 10px; right: 15px; background: #d32f2f; color: white; border: none; font-size: 20px; font-weight: bold; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-fechar-top:hover { background: #b71c1c; }
         .btn-baixar { background: #25d366; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
         .btn-fechar { background: #777; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; margin-left: 10px; }
     </style>
@@ -62,8 +67,32 @@
         <h3>⚙️ Configurações Gerais</h3>
         <label>Chave Pix:</label>
         <input type="text" id="chave_pix" value="{{ cardapio.chave_pix }}">
-        <label>WhatsApp para Receber Pedidos (com DDD, ex: 5528999999999):</label>
+        <label>WhatsApp para Receber Pedidos (com DDD, ex: 55289998815867):</label>
         <input type="text" id="whatsapp" value="{{ cardapio.whatsapp }}">
+    </div>
+
+    <!-- BAIRROS E TAXAS DE ENTREGA (GUAÇUÍ) -->
+    <div class="secao">
+        <h3>🛵 Bairros e Taxas de Entrega (Guaçuí)</h3>
+        <div id="lista_bairros">
+            {% if cardapio.bairros %}
+                {% for b in cardapio.bairros %}
+                <div class="linha item-bairro">
+                    <input type="text" class="bairro_nome" placeholder="Nome do Bairro" value="{{ b.nome }}">
+                    <input type="text" class="bairro_taxa" placeholder="Taxa R$" value="{{ b.taxa }}" style="width:100px;">
+                    <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Exemplo padrão se estiver vazio -->
+                <div class="linha item-bairro">
+                    <input type="text" class="bairro_nome" placeholder="Nome do Bairro" value="Centro">
+                    <input type="text" class="bairro_taxa" placeholder="Taxa R$" value="3,00" style="width:100px;">
+                    <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+                </div>
+            {% endif %}
+        </div>
+        <button class="btn-add" onclick="addBairro()">+ Adicionar Bairro / Taxa</button>
     </div>
 
     <!-- MARMITAS ESPECIAIS -->
@@ -168,7 +197,7 @@
     <button class="btn-gerar-img" onclick="gerarImagemCardapio()">🖼️ GERAR IMAGEM DO CARDÁPIO (PARA REDES SOCIAIS)</button>
 </div>
 
-<!-- CONTAINER QUE SERÁ TRANSFORMADO EM IMAGEM (ESCONDIDO) -->
+<!-- CONTAINER PARA IMAGEM -->
 <div id="cardapioImagem">
     <div class="img-header">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
@@ -182,14 +211,15 @@
     </div>
 </div>
 
-<!-- MODAL PARA EXIBIR E BAIXAR A IMAGEM -->
+<!-- MODAL IMAGEM -->
 <div class="modal" id="modalImagem">
     <div class="modal-content">
+        <button class="btn-fechar-top" onclick="fecharModal()" title="Fechar">✕</button>
         <h3>🖼️ Sua Imagem do Cardápio está Pronta!</h3>
         <p style="font-size:13px; color:#555;">Clique com o botão direito ou segure na imagem para salvar, ou use o botão abaixo:</p>
-        <div id="areaPreviewImg"></div>
-        <div>
-            <a id="linkDownload" download="cardapio_nogueira_delivery.png">
+        <div id="areaPreviewImg" style="margin: 15px 0;"></div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a id="linkDownload" download="cardapio_nogueira_delivery.png" style="text-decoration: none;">
                 <button class="btn-baixar">⬇️ BAIXAR IMAGEM</button>
             </a>
             <button class="btn-fechar" onclick="fecharModal()">FECHAR</button>
@@ -203,6 +233,14 @@
         let div = document.createElement('div');
         div.className = 'linha';
         div.innerHTML = `<input type="text" class="${classe}" placeholder="${placeholder}"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+        cont.appendChild(div);
+    }
+
+    function addBairro() {
+        let cont = document.getElementById('lista_bairros');
+        let div = document.createElement('div');
+        div.className = 'linha item-bairro';
+        div.innerHTML = `<input type="text" class="bairro_nome" placeholder="Nome do Bairro"><input type="text" class="bairro_taxa" placeholder="Taxa R$" style="width:100px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
         cont.appendChild(div);
     }
 
@@ -239,6 +277,13 @@
     }
 
     function salvarTudo() {
+        let bairros = [];
+        document.querySelectorAll('.item-bairro').forEach(el => {
+            let n = el.querySelector('.bairro_nome').value;
+            let t = el.querySelector('.bairro_taxa').value;
+            if(n) bairros.push({nome: n, taxa: t});
+        });
+
         let pratos = [];
         document.querySelectorAll('.item-prato').forEach(el => {
             let n = el.querySelector('.prato_nome').value;
@@ -264,6 +309,7 @@
         let dados = {
             chave_pix: document.getElementById('chave_pix').value,
             whatsapp: document.getElementById('whatsapp').value,
+            bairros: bairros,
             especiais: {
                 ativo: document.getElementById('esp_ativo').checked,
                 preco_m: document.getElementById('esp_m').value,
@@ -293,11 +339,9 @@
         .catch(e => alert('❌ Erro ao salvar!'));
     }
 
-    /* FUNÇÃO QUE MONTA O LAYOUT VISUAL E GERA A IMAGEM */
     function gerarImagemCardapio() {
         let html = '';
 
-        // Especiais
         if(document.getElementById('esp_ativo').checked) {
             let m = document.getElementById('esp_m').value;
             let g = document.getElementById('esp_g').value;
@@ -313,7 +357,6 @@
             `;
         }
 
-        // Casa
         if(document.getElementById('casa_ativo').checked) {
             let m = document.getElementById('casa_m').value;
             let g = document.getElementById('casa_g').value;
@@ -329,7 +372,6 @@
             `;
         }
 
-        // Pratos Especiais
         let pratos = [];
         document.querySelectorAll('.item-prato').forEach(el => {
             let n = el.querySelector('.prato_nome').value;
@@ -346,7 +388,6 @@
             `;
         }
 
-        // Bebidas
         let bebidas = [];
         document.querySelectorAll('.item-bebida').forEach(el => {
             let n = el.querySelector('.bebida_nome').value;
@@ -362,7 +403,6 @@
             `;
         }
 
-        // Sobremesas
         let sobremesas = [];
         document.querySelectorAll('.item-sobremesa').forEach(el => {
             let n = el.querySelector('.sob_nome').value;
@@ -380,13 +420,11 @@
 
         document.getElementById('conteudoCardapioImg').innerHTML = html;
 
-        // Revela a div temporariamente para a foto
         let box = document.getElementById('cardapioImagem');
         box.style.display = 'block';
 
-        // Tira o "print"
         html2canvas(box, { scale: 2 }).then(canvas => {
-            box.style.display = 'none'; // Esconde de novo
+            box.style.display = 'none';
             let imgData = canvas.toDataURL('image/png');
 
             document.getElementById('areaPreviewImg').innerHTML = `<img src="${imgData}" style="max-width:100%; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">`;
