@@ -11,7 +11,7 @@ def carregar_cardapio():
     if not os.path.exists(DATA_FILE):
         dados_padrao = {
             "chave_pix": "03178142738 - Edeildo",
-            "whatsapp": "+55 28 98815-8678",
+            "whatsapp": "5528988158678",
             "especiais": {
                 "ativo": True,
                 "preco_m": "22,00",
