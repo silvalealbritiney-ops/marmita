@@ -4,18 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel da Mamãe - Nogueira Delivery</title>
+    <!-- BILIOTECA PARA GERAR IMAGEM -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 15px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #d32f2f; text-align: center; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f9; margin: 15px; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #d32f2f; text-align: center; margin-top: 0; }
         .secao { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .secao h3 { color: #2e7d32; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-        label { font-weight: bold; display: block; margin-top: 10px; font-size: 14px; }
+        .secao h3 { color: #2e7d32; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 16px; }
+        label { font-weight: bold; display: block; margin-top: 10px; font-size: 13px; }
         input[type="text"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .linha { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
-        .btn-add { background: #0288d1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: #0288d1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-weight: bold; }
         .btn-del { background: #d32f2f; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; position: sticky; bottom: 10px; }
+        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px; }
+        .btn-gerar-img { background: #ff9800; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+
+        /* ESTILO DO CARDÁPIO QUE VIRA IMAGEM (ESTILO INSTAGRAM/STORY) */
+        #cardapioImagem {
+            display: none; /* Só exibe para capturar */
+            width: 450px;
+            background: #ffffff;
+            border: 8px solid #d32f2f;
+            padding: 25px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            margin: 20px auto;
+            color: #333;
+        }
+        .img-header { text-align: center; border-bottom: 2px dashed #d32f2f; padding-bottom: 15px; margin-bottom: 15px; }
+        .img-header img { max-width: 80px; border-radius: 50%; border: 3px solid #d32f2f; }
+        .img-header h1 { color: #d32f2f; margin: 5px 0 0 0; font-size: 26px; font-weight: 900; }
+        .img-header h3 { color: #2e7d32; margin: 2px 0 0 0; font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+        
+        .img-cat { margin-bottom: 15px; }
+        .img-cat-title { background: #d32f2f; color: white; padding: 6px 12px; font-weight: bold; font-size: 14px; border-radius: 5px; display: inline-block; margin-bottom: 8px; }
+        .img-item { font-size: 14px; margin-bottom: 4px; }
+        .img-item-bold { font-weight: bold; color: #111; }
+        .img-sub { font-size: 12px; color: #555; margin-left: 10px; margin-bottom: 6px; }
+        .img-footer { text-align: center; border-top: 2px dashed #d32f2f; padding-top: 12px; margin-top: 15px; font-weight: bold; color: #2e7d32; font-size: 14px; }
+
+        /* MODAL COM A IMAGEM PRONTA */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 999; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 90vh; overflow-y: auto; text-align: center; }
+        .btn-baixar { background: #25d366; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-fechar { background: #777; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -36,7 +69,7 @@
     <!-- MARMITAS ESPECIAIS -->
     <div class="secao">
         <h3>⭐ Marmitas Especiais</h3>
-        <label><input type="checkbox" id="esp_ativo" {% if cardapio.especiais.ativo %}checked{% endif %}> Mostrar esta categoria no site</label>
+        <label><input type="checkbox" id="esp_ativo" {% if cardapio.especiais.ativo %}checked{% endif %}> Mostrar esta categoria no site e na imagem</label>
         <div class="linha">
             <div><label>Preço M (R$):</label><input type="text" id="esp_m" value="{{ cardapio.especiais.preco_m }}"></div>
             <div><label>Preço G (R$):</label><input type="text" id="esp_g" value="{{ cardapio.especiais.preco_g }}"></div>
@@ -62,7 +95,7 @@
     <!-- MARMITAS DA CASA -->
     <div class="secao">
         <h3>🏠 Marmitas da Casa</h3>
-        <label><input type="checkbox" id="casa_ativo" {% if cardapio.casa.ativo %}checked{% endif %}> Mostrar esta categoria no site</label>
+        <label><input type="checkbox" id="casa_ativo" {% if cardapio.casa.ativo %}checked{% endif %}> Mostrar esta categoria no site e na imagem</label>
         <div class="linha">
             <div><label>Preço M (R$):</label><input type="text" id="casa_m" value="{{ cardapio.casa.preco_m }}"></div>
             <div><label>Preço G (R$):</label><input type="text" id="casa_g" value="{{ cardapio.casa.preco_g }}"></div>
@@ -131,7 +164,37 @@
         <button class="btn-add" onclick="addSobremesa()">+ Adicionar Sobremesa</button>
     </div>
 
-    <button class="btn-salvar" onclick="salvarTudo()">💾 SALVAR TUDO NO SITE</button>
+    <button class="btn-salvar" onclick="salvarTudo()">💾 SALVAR DADOS NO SITE</button>
+    <button class="btn-gerar-img" onclick="gerarImagemCardapio()">🖼️ GERAR IMAGEM DO CARDÁPIO (PARA REDES SOCIAIS)</button>
+</div>
+
+<!-- CONTAINER QUE SERÁ TRANSFORMADO EM IMAGEM (ESCONDIDO) -->
+<div id="cardapioImagem">
+    <div class="img-header">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+        <h1>NOGUEIRA DELIVERY</h1>
+        <h3>CARDÁPIO DO DIA</h3>
+    </div>
+    <div id="conteudoCardapioImg"></div>
+    <div class="img-footer">
+        📲 Peça pelo site ou WhatsApp!<br>
+        Bom Apetite! ❤️
+    </div>
+</div>
+
+<!-- MODAL PARA EXIBIR E BAIXAR A IMAGEM -->
+<div class="modal" id="modalImagem">
+    <div class="modal-content">
+        <h3>🖼️ Sua Imagem do Cardápio está Pronta!</h3>
+        <p style="font-size:13px; color:#555;">Clique com o botão direito ou segure na imagem para salvar, ou use o botão abaixo:</p>
+        <div id="areaPreviewImg"></div>
+        <div>
+            <a id="linkDownload" download="cardapio_nogueira_delivery.png">
+                <button class="btn-baixar">⬇️ BAIXAR IMAGEM</button>
+            </a>
+            <button class="btn-fechar" onclick="fecharModal()">FECHAR</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -226,8 +289,114 @@
             body: JSON.stringify(dados)
         })
         .then(r => r.json())
-        .then(d => { alert('✅ Cardápio e preços atualizados com sucesso!'); location.reload(); })
+        .then(d => { alert('✅ Cardápio salvo com sucesso!'); location.reload(); })
         .catch(e => alert('❌ Erro ao salvar!'));
+    }
+
+    /* FUNÇÃO QUE MONTA O LAYOUT VISUAL E GERA A IMAGEM */
+    function gerarImagemCardapio() {
+        let html = '';
+
+        // Especiais
+        if(document.getElementById('esp_ativo').checked) {
+            let m = document.getElementById('esp_m').value;
+            let g = document.getElementById('esp_g').value;
+            let carnes = pegarValores('esp_carne').join(', ');
+            let guarn = pegarValores('esp_guarnicao').join(', ');
+
+            html += `
+                <div class="img-cat">
+                    <div class="img-cat-title">⭐ MARMITAS ESPECIAIS (M: R$ ${m} | G: R$ ${g})</div>
+                    <div class="img-item"><span class="img-item-bold">Opções de Carne:</span> ${carnes || 'Nenhuma'}</div>
+                    <div class="img-sub"><b>Guarnições:</b> ${guarn || 'Nenhuma'}</div>
+                </div>
+            `;
+        }
+
+        // Casa
+        if(document.getElementById('casa_ativo').checked) {
+            let m = document.getElementById('casa_m').value;
+            let g = document.getElementById('casa_g').value;
+            let carnes = pegarValores('casa_carne').join(', ');
+            let guarn = pegarValores('casa_guarnicao').join(', ');
+
+            html += `
+                <div class="img-cat">
+                    <div class="img-cat-title">🏠 MARMITAS DA CASA (M: R$ ${m} | G: R$ ${g})</div>
+                    <div class="img-item"><span class="img-item-bold">Opções de Carne:</span> ${carnes || 'Nenhuma'}</div>
+                    <div class="img-sub"><b>Guarnições:</b> ${guarn || 'Nenhuma'}</div>
+                </div>
+            `;
+        }
+
+        // Pratos Especiais
+        let pratos = [];
+        document.querySelectorAll('.item-prato').forEach(el => {
+            let n = el.querySelector('.prato_nome').value;
+            let m = el.querySelector('.prato_m').value;
+            let g = el.querySelector('.prato_g').value;
+            if(n) pratos.push(`• ${n} (M: R$ ${m} | G: R$ ${g})`);
+        });
+        if(pratos.length > 0) {
+            html += `
+                <div class="img-cat">
+                    <div class="img-cat-title">🍲 PRATOS DA CASA</div>
+                    <div class="img-item">${pratos.join('<br>')}</div>
+                </div>
+            `;
+        }
+
+        // Bebidas
+        let bebidas = [];
+        document.querySelectorAll('.item-bebida').forEach(el => {
+            let n = el.querySelector('.bebida_nome').value;
+            let p = el.querySelector('.bebida_preco').value;
+            if(n) bebidas.push(`• ${n} - R$ ${p}`);
+        });
+        if(bebidas.length > 0) {
+            html += `
+                <div class="img-cat">
+                    <div class="img-cat-title">🥤 BEBIDAS</div>
+                    <div class="img-item">${bebidas.join('<br>')}</div>
+                </div>
+            `;
+        }
+
+        // Sobremesas
+        let sobremesas = [];
+        document.querySelectorAll('.item-sobremesa').forEach(el => {
+            let n = el.querySelector('.sob_nome').value;
+            let p = el.querySelector('.sob_preco').value;
+            if(n) sobremesas.push(`• ${n} - R$ ${p}`);
+        });
+        if(sobremesas.length > 0) {
+            html += `
+                <div class="img-cat">
+                    <div class="img-cat-title">🍰 SOBREMESAS</div>
+                    <div class="img-item">${sobremesas.join('<br>')}</div>
+                </div>
+            `;
+        }
+
+        document.getElementById('conteudoCardapioImg').innerHTML = html;
+
+        // Revela a div temporariamente para a foto
+        let box = document.getElementById('cardapioImagem');
+        box.style.display = 'block';
+
+        // Tira o "print"
+        html2canvas(box, { scale: 2 }).then(canvas => {
+            box.style.display = 'none'; // Esconde de novo
+            let imgData = canvas.toDataURL('image/png');
+
+            document.getElementById('areaPreviewImg').innerHTML = `<img src="${imgData}" style="max-width:100%; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">`;
+            document.getElementById('linkDownload').href = imgData;
+            document.getElementById('modalImagem').style.display = 'flex';
+        });
+    }
+
+    function fecharModal() {
+        document.getElementById('modalImagem').style.display = 'none';
     }
 </script>
 </body>
