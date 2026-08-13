@@ -17,7 +17,8 @@ CARDAPIO_PADRAO = {
     "bairros": [],
     "pix": {"chave": "", "titular": ""},
     "whatsapp": "",
-    "especiais": {"ativo": False, "itens": []}
+    "especiais": {"ativo": False, "itens": []},
+    "casa": {"ativo": False, "itens": []}
 }
 
 try:
