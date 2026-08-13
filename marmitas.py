@@ -1,52 +1,34 @@
-import json
 import os
 from flask import Flask, render_template, request, jsonify
+from supabase import create_client, Client
 
 app = Flask(__name__)
 
-DATA_FILE = 'cardapio.json'
+# Configurações do seu Supabase
+SUPABASE_URL = "https://dbxntyryjmwrrelpcqnt.supabase.co"
+# Cole dentro das aspas abaixo a chave 'Publishable key' (a que começa com sb_publishable_...)
+SUPABASE_KEY = "sb_publishable_cvk2Fm5Y3kzAA6r3_9VoHw_teWU5-Sv"
 
-# Cardápio inicial padrão
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 def carregar_cardapio():
-    if not os.path.exists(DATA_FILE):
-        dados_padrao = {
-            "chave_pix": "03178142738 - Edeildo",
-            "whatsapp": "5528988158678",
-            "especiais": {
-                "ativo": True,
-                "preco_m": "22,00",
-                "preco_g": "25,00",
-                "carnes": ["Filet Mignon", "Picanha na Chapa"],
-                "guarnicoes": ["Arroz Soltinho", "Feijão Tropeiro", "Batata Frita", "Salada"]
-            },
-            "casa": {
-                "ativo": True,
-                "preco_m": "18,00",
-                "preco_g": "20,00",
-                "carnes": ["Bife Acebolado", "Frango Grelhado", "Linguiça"],
-                "guarnicoes": ["Arroz", "Feijão", "Macarrão", "Salada"]
-            },
-            "pratos_casa": [
-                {"nome": "Filé à Parmegiana", "preco_m": "25,00", "preco_g": "28,00"},
-                {"nome": "Strogonoff de Frango", "preco_m": "20,00", "preco_g": "23,00"}
-            ],
-            "bebidas": [
-                {"nome": "Coca-Cola Lata 350ml", "preco": "6,00"},
-                {"nome": "Guaraná 2 Litros", "preco": "12,00"}
-            ],
-            "sobremesas": [
-                {"nome": "Pudim de Leite Condensado", "preco": "8,00"}
-            ]
-        }
-        salvar_cardapio(dados_padrao)
-        return dados_padrao
-    
-    with open(DATA_FILE, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        response = supabase.table("cardapio").select("dados").eq("id", 1).execute()
+        if response.data:
+            return response.data[0]["dados"]
+        else:
+            return {}
+    except Exception as e:
+        print("Erro ao carregar do Supabase:", e)
+        return {}
 
 def salvar_cardapio(dados):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(dados, f, ensure_ascii=False, indent=4)
+    try:
+        supabase.table("cardapio").upsert({"id": 1, "dados": dados}).execute()
+        return True
+    except Exception as e:
+        print("Erro ao salvar no Supabase:", e)
+        return False
 
 @app.route('/')
 def index():
@@ -59,10 +41,12 @@ def admin():
     return render_template('admin.html', cardapio=cardapio)
 
 @app.route('/api/salvar-cardapio', methods=['POST'])
-def api_salvar_cardapio():
-    dados = request.json
-    salvar_cardapio(dados)
-    return jsonify({"status": "sucesso"})
+def salvar():
+    novos_dados = request.get_json()
+    if salvar_cardapio(novos_dados):
+        return jsonify({"status": "sucesso", "mensagem": "Cardápio atualizado com sucesso no Supabase!"})
+    else:
+        return jsonify({"status": "erro", "mensagem": "Erro ao salvar os dados."}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
