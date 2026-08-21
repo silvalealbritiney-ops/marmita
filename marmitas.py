@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify
 from supabase import create_client, Client
 
 app = Flask(__name__)
@@ -9,36 +9,23 @@ app = Flask(__name__)
 # ==========================================================
 # SUPABASE
 # ==========================================================
-# O ideal é colocar a chave no ambiente da hospedagem.
-# Se SUPABASE_SERVICE_ROLE_KEY existir, ela será usada para o
-# backend poder gravar no banco sem depender de policy de escrita.
-#
-# A chave publishable/anon fica apenas como fallback.
-SUPABASE_URL = os.getenv(
-    "SUPABASE_URL",
-    "https://dbxntyryjmwrrelpcqnt.supabase.co"
-)
 
+# URL DO PROJETO SUPABASE
+SUPABASE_URL = "https://dbxntyryjmwrrelpcqnt.supabase.co"
+
+# Chave pública do projeto
 SUPABASE_KEY = os.getenv(
     "SUPABASE_KEY",
-    "sb_publishable_cvk2Fm5Y3kzAA6r3_9VoHw_teWU5-Sv"
+    "SUA_CHAVE_PUBLICA_AQUI"
 )
-
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
-
-CHAVE_USADA = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY
 
 supabase: Client | None = None
 
 try:
-    supabase = create_client(SUPABASE_URL, CHAVE_USADA)
-    print("Supabase conectado com sucesso.")
-    print(
-        "Tipo de chave usada:",
-        "SERVICE ROLE" if SUPABASE_SERVICE_ROLE_KEY else "PUBLISHABLE/ANON"
-    )
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    print("✅ Supabase conectado com sucesso!")
 except Exception as e:
-    print("ERRO AO CONECTAR AO SUPABASE:", repr(e))
+    print("❌ ERRO AO CONECTAR AO SUPABASE:", repr(e))
     supabase = None
 
 
