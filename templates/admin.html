@@ -4,23 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel da Mamãe - Nogueira Delivery</title>
-    <!-- BILIOTECA PARA GERAR IMAGEM -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f9; margin: 15px; }
-        .container { max-width: 650px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #d32f2f; text-align: center; margin-top: 0; }
-        .secao { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .secao h3 { color: #2e7d32; margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 16px; }
-        label { font-weight: bold; display: block; margin-top: 10px; font-size: 13px; }
-        input[type="text"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .linha { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
-        .btn-add { background: #0288d1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .btn-del { background: #d32f2f; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-salvar { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px; }
-        .btn-gerar-img { background: #ff9800; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; }
 
-        /* ESTILO DO CARDÁPIO QUE VIRA IMAGEM */
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f4f9;
+            margin: 15px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #d32f2f;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .secao {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .secao h3 {
+            color: #2e7d32;
+            margin-top: 0;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            font-size: 16px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .linha {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .btn-add {
+            background: #0288d1;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .btn-del {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-salvar {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .btn-salvar:disabled {
+            background: #8fb58f;
+            cursor: wait;
+        }
+
+        .btn-gerar-img {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* CARDÁPIO QUE VIRA IMAGEM */
         #cardapioImagem {
             display: none;
             width: 450px;
@@ -32,410 +131,1302 @@
             margin: 20px auto;
             color: #333;
         }
-        .img-header { text-align: center; border-bottom: 2px dashed #d32f2f; padding-bottom: 15px; margin-bottom: 15px; }
-        .img-header img { max-width: 80px; border-radius: 50%; border: 3px solid #d32f2f; }
-        .img-header h1 { color: #d32f2f; margin: 5px 0 0 0; font-size: 26px; font-weight: 900; }
-        .img-header h3 { color: #2e7d32; margin: 2px 0 0 0; font-size: 16px; font-weight: bold; letter-spacing: 1px; }
-        
-        .img-cat { margin-bottom: 15px; }
-        .img-cat-title { background: #d32f2f; color: white; padding: 6px 12px; font-weight: bold; font-size: 14px; border-radius: 5px; display: inline-block; margin-bottom: 8px; }
-        .img-item { font-size: 14px; margin-bottom: 4px; }
-        .img-item-bold { font-weight: bold; color: #111; }
-        .img-sub { font-size: 12px; color: #555; margin-left: 10px; margin-bottom: 6px; }
-        .img-footer { text-align: center; border-top: 2px dashed #d32f2f; padding-top: 12px; margin-top: 15px; font-weight: bold; color: #2e7d32; font-size: 14px; }
 
-        /* MODAL COM A IMAGEM PRONTA */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 999; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 90%; max-height: 90vh; overflow-y: auto; text-align: center; position: relative; }
-        
-        .btn-fechar-top {
-            position: absolute; top: 10px; right: 15px; background: #d32f2f; color: white; border: none; font-size: 20px; font-weight: bold; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        .img-header {
+            text-align: center;
+            border-bottom: 2px dashed #d32f2f;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
         }
-        .btn-fechar-top:hover { background: #b71c1c; }
-        .btn-baixar { background: #25d366; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        .btn-fechar { background: #777; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; margin-left: 10px; }
+
+        .img-header img {
+            max-width: 80px;
+            border-radius: 50%;
+            border: 3px solid #d32f2f;
+        }
+
+        .img-header h1 {
+            color: #d32f2f;
+            margin: 5px 0 0 0;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .img-header h3 {
+            color: #2e7d32;
+            margin: 2px 0 0 0;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .img-cat {
+            margin-bottom: 15px;
+        }
+
+        .img-cat-title {
+            background: #d32f2f;
+            color: white;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .img-item {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .img-item-bold {
+            font-weight: bold;
+            color: #111;
+        }
+
+        .img-sub {
+            font-size: 12px;
+            color: #555;
+            margin-left: 10px;
+            margin-bottom: 6px;
+        }
+
+        .img-footer {
+            text-align: center;
+            border-top: 2px dashed #d32f2f;
+            padding-top: 12px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 14px;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            position: relative;
+        }
+
+        .btn-fechar-top {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-fechar-top:hover {
+            background: #b71c1c;
+        }
+
+        .btn-baixar {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .btn-fechar {
+            background: #777;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+
+        #statusSalvamento {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .status-sucesso {
+            display: block !important;
+            background: #d9f2dc;
+            color: #1b5e20;
+            border: 1px solid #81c784;
+        }
+
+        .status-erro {
+            display: block !important;
+            background: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+            white-space: pre-wrap;
+            text-align: left !important;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="container">
-    <a href="/" style="display:block; text-align:center; margin-bottom:15px; font-weight:bold; color:#0288d1; text-decoration:none;">⬅ Ver o Site do Cliente</a>
+
+    <a href="/" style="display:block; text-align:center; margin-bottom:15px; font-weight:bold; color:#0288d1; text-decoration:none;">
+        ⬅ Ver o Site do Cliente
+    </a>
+
     <h2>Painel da Mamãe 👵❤️</h2>
+
+    <div id="statusSalvamento"></div>
 
     <!-- CONFIGURAÇÕES GERAIS -->
     <div class="secao">
         <h3>⚙️ Configurações Gerais</h3>
+
         <label>Chave Pix:</label>
         <input type="text" id="chave_pix" value="{{ cardapio.chave_pix }}">
-        <label>WhatsApp para Receber Pedidos (com DDD, ex: 55289998815867):</label>
-        <input type="text" id="whatsapp" value="{{ cardapio.whatsapp }}">
+
+        <label>WhatsApp para Receber Pedidos:</label>
+        <input
+            type="text"
+            id="whatsapp"
+            value="{{ cardapio.whatsapp }}"
+        >
     </div>
 
-    <!-- BAIRROS E TAXAS DE ENTREGA (GUAÇUÍ) -->
+    <!-- BAIRROS -->
     <div class="secao">
         <h3>🛵 Bairros e Taxas de Entrega (Guaçuí)</h3>
+
         <div id="lista_bairros">
             {% if cardapio.bairros %}
                 {% for b in cardapio.bairros %}
                 <div class="linha item-bairro">
-                    <input type="text" class="bairro_nome" placeholder="Nome do Bairro" value="{{ b.nome }}">
-                    <input type="text" class="bairro_taxa" placeholder="Taxa R$" value="{{ b.taxa }}" style="width:100px;">
-                    <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+                    <input
+                        type="text"
+                        class="bairro_nome"
+                        placeholder="Nome do Bairro"
+                        value="{{ b.nome }}"
+                    >
+
+                    <input
+                        type="text"
+                        class="bairro_taxa"
+                        placeholder="Taxa R$"
+                        value="{{ b.taxa }}"
+                        style="width:100px;"
+                    >
+
+                    <button class="btn-del" type="button" onclick="this.parentElement.remove()">
+                        X
+                    </button>
                 </div>
                 {% endfor %}
             {% else %}
-                <!-- Exemplo padrão se estiver vazio -->
                 <div class="linha item-bairro">
-                    <input type="text" class="bairro_nome" placeholder="Nome do Bairro" value="Centro">
-                    <input type="text" class="bairro_taxa" placeholder="Taxa R$" value="3,00" style="width:100px;">
-                    <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+                    <input
+                        type="text"
+                        class="bairro_nome"
+                        placeholder="Nome do Bairro"
+                        value="Centro"
+                    >
+
+                    <input
+                        type="text"
+                        class="bairro_taxa"
+                        placeholder="Taxa R$"
+                        value="3,00"
+                        style="width:100px;"
+                    >
+
+                    <button class="btn-del" type="button" onclick="this.parentElement.remove()">
+                        X
+                    </button>
                 </div>
             {% endif %}
         </div>
-        <button class="btn-add" onclick="addBairro()">+ Adicionar Bairro / Taxa</button>
+
+        <button class="btn-add" type="button" onclick="addBairro()">
+            + Adicionar Bairro / Taxa
+        </button>
     </div>
 
-    <!-- MARMITAS ESPECIAIS -->
+    <!-- ESPECIAIS -->
     <div class="secao">
         <h3>⭐ Marmitas Especiais</h3>
-        <label><input type="checkbox" id="esp_ativo" {% if cardapio.especiais.ativo %}checked{% endif %}> Mostrar esta categoria no site e na imagem</label>
+
+        <label>
+            <input
+                type="checkbox"
+                id="esp_ativo"
+                {% if cardapio.especiais.ativo %}checked{% endif %}
+            >
+            Mostrar esta categoria no site e na imagem
+        </label>
+
         <div class="linha">
-            <div><label>Preço M (R$):</label><input type="text" id="esp_m" value="{{ cardapio.especiais.preco_m }}"></div>
-            <div><label>Preço G (R$):</label><input type="text" id="esp_g" value="{{ cardapio.especiais.preco_g }}"></div>
+            <div>
+                <label>Preço M (R$):</label>
+                <input type="text" id="esp_m" value="{{ cardapio.especiais.preco_m }}">
+            </div>
+
+            <div>
+                <label>Preço G (R$):</label>
+                <input type="text" id="esp_g" value="{{ cardapio.especiais.preco_g }}">
+            </div>
         </div>
-        
+
         <label>Carnes Especiais:</label>
+
         <div id="lista_esp_carnes">
             {% for c in cardapio.especiais.carnes %}
-            <div class="linha"><input type="text" class="esp_carne" value="{{ c }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
-            {% endfor %}
-        </div>
-        <button class="btn-add" onclick="addLinha('lista_esp_carnes', 'esp_carne', 'Nome da carne')">+ Adicionar Carne</button>
-
-        <label>Guarnições Especiais:</label>
-        <div id="lista_esp_guarnicoes">
-            {% for g in cardapio.especiais.guarnicoes %}
-            <div class="linha"><input type="text" class="esp_guarnicao" value="{{ g }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
-            {% endfor %}
-        </div>
-        <button class="btn-add" onclick="addLinha('lista_esp_guarnicoes', 'esp_guarnicao', 'Nome da guarnição')">+ Adicionar Guarnição</button>
-    </div>
-
-    <!-- MARMITAS DA CASA -->
-    <div class="secao">
-        <h3>🏠 Marmitas da Casa</h3>
-        <label><input type="checkbox" id="casa_ativo" {% if cardapio.casa.ativo %}checked{% endif %}> Mostrar esta categoria no site e na imagem</label>
-        <div class="linha">
-            <div><label>Preço M (R$):</label><input type="text" id="casa_m" value="{{ cardapio.casa.preco_m }}"></div>
-            <div><label>Preço G (R$):</label><input type="text" id="casa_g" value="{{ cardapio.casa.preco_g }}"></div>
-        </div>
-        
-        <label>Carnes da Casa:</label>
-        <div id="lista_casa_carnes">
-            {% for c in cardapio.casa.carnes %}
-            <div class="linha"><input type="text" class="casa_carne" value="{{ c }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
-            {% endfor %}
-        </div>
-        <button class="btn-add" onclick="addLinha('lista_casa_carnes', 'casa_carne', 'Nome da carne')">+ Adicionar Carne</button>
-
-        <label>Guarnições da Casa:</label>
-        <div id="lista_casa_guarnicoes">
-            {% for g in cardapio.casa.guarnicoes %}
-            <div class="linha"><input type="text" class="casa_guarnicao" value="{{ g }}"><button class="btn-del" onclick="this.parentElement.remove()">X</button></div>
-            {% endfor %}
-        </div>
-        <button class="btn-add" onclick="addLinha('lista_casa_guarnicoes', 'casa_guarnicao', 'Nome da guarnição')">+ Adicionar Guarnição</button>
-    </div>
-
-    <!-- PRATOS DA CASA -->
-    <div class="secao">
-        <h3>🍲 Pratos da Casa (Ex: Parmegiana, Strogonoff)</h3>
-        <div id="lista_pratos">
-            {% for p in cardapio.pratos_casa %}
-            <div class="linha item-prato">
-                <input type="text" class="prato_nome" placeholder="Nome do Prato" value="{{ p.nome }}">
-                <input type="text" class="prato_m" placeholder="R$ M" value="{{ p.preco_m }}" style="width:70px;">
-                <input type="text" class="prato_g" placeholder="R$ G" value="{{ p.preco_g }}" style="width:70px;">
-                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+            <div class="linha">
+                <input type="text" class="esp_carne" value="{{ c }}">
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">X</button>
             </div>
             {% endfor %}
         </div>
-        <button class="btn-add" onclick="addPrato()">+ Adicionar Prato Especial</button>
+
+        <button
+            class="btn-add"
+            type="button"
+            onclick="addLinha('lista_esp_carnes', 'esp_carne', 'Nome da carne')"
+        >
+            + Adicionar Carne
+        </button>
+
+        <label>Guarnições Especiais:</label>
+
+        <div id="lista_esp_guarnicoes">
+            {% for g in cardapio.especiais.guarnicoes %}
+            <div class="linha">
+                <input type="text" class="esp_guarnicao" value="{{ g }}">
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">X</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button
+            class="btn-add"
+            type="button"
+            onclick="addLinha('lista_esp_guarnicoes', 'esp_guarnicao', 'Nome da guarnição')"
+        >
+            + Adicionar Guarnição
+        </button>
+    </div>
+
+    <!-- CASA -->
+    <div class="secao">
+        <h3>🏠 Marmitas da Casa</h3>
+
+        <label>
+            <input
+                type="checkbox"
+                id="casa_ativo"
+                {% if cardapio.casa.ativo %}checked{% endif %}
+            >
+            Mostrar esta categoria no site e na imagem
+        </label>
+
+        <div class="linha">
+            <div>
+                <label>Preço M (R$):</label>
+                <input type="text" id="casa_m" value="{{ cardapio.casa.preco_m }}">
+            </div>
+
+            <div>
+                <label>Preço G (R$):</label>
+                <input type="text" id="casa_g" value="{{ cardapio.casa.preco_g }}">
+            </div>
+        </div>
+
+        <label>Carnes da Casa:</label>
+
+        <div id="lista_casa_carnes">
+            {% for c in cardapio.casa.carnes %}
+            <div class="linha">
+                <input type="text" class="casa_carne" value="{{ c }}">
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">X</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button
+            class="btn-add"
+            type="button"
+            onclick="addLinha('lista_casa_carnes', 'casa_carne', 'Nome da carne')"
+        >
+            + Adicionar Carne
+        </button>
+
+        <label>Guarnições da Casa:</label>
+
+        <div id="lista_casa_guarnicoes">
+            {% for g in cardapio.casa.guarnicoes %}
+            <div class="linha">
+                <input type="text" class="casa_guarnicao" value="{{ g }}">
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">X</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button
+            class="btn-add"
+            type="button"
+            onclick="addLinha('lista_casa_guarnicoes', 'casa_guarnicao', 'Nome da guarnição')"
+        >
+            + Adicionar Guarnição
+        </button>
+    </div>
+
+    <!-- PRATOS -->
+    <div class="secao">
+        <h3>🍲 Pratos da Casa</h3>
+
+        <div id="lista_pratos">
+            {% for p in cardapio.pratos_casa %}
+            <div class="linha item-prato">
+
+                <input
+                    type="text"
+                    class="prato_nome"
+                    placeholder="Nome do Prato"
+                    value="{{ p.nome }}"
+                >
+
+                <input
+                    type="text"
+                    class="prato_m"
+                    placeholder="R$ M"
+                    value="{{ p.preco_m }}"
+                    style="width:70px;"
+                >
+
+                <input
+                    type="text"
+                    class="prato_g"
+                    placeholder="R$ G"
+                    value="{{ p.preco_g }}"
+                    style="width:70px;"
+                >
+
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">
+                    X
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="btn-add" type="button" onclick="addPrato()">
+            + Adicionar Prato Especial
+        </button>
     </div>
 
     <!-- BEBIDAS -->
     <div class="secao">
         <h3>🥤 Bebidas</h3>
+
         <div id="lista_bebidas">
             {% for b in cardapio.bebidas %}
             <div class="linha item-bebida">
-                <input type="text" class="bebida_nome" placeholder="Nome da Bebida" value="{{ b.nome }}">
-                <input type="text" class="bebida_preco" placeholder="Preço R$" value="{{ b.preco }}" style="width:90px;">
-                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+
+                <input
+                    type="text"
+                    class="bebida_nome"
+                    placeholder="Nome da Bebida"
+                    value="{{ b.nome }}"
+                >
+
+                <input
+                    type="text"
+                    class="bebida_preco"
+                    placeholder="Preço R$"
+                    value="{{ b.preco }}"
+                    style="width:90px;"
+                >
+
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">
+                    X
+                </button>
             </div>
             {% endfor %}
         </div>
-        <button class="btn-add" onclick="addBebida()">+ Adicionar Bebida</button>
+
+        <button class="btn-add" type="button" onclick="addBebida()">
+            + Adicionar Bebida
+        </button>
     </div>
 
     <!-- SOBREMESAS -->
     <div class="secao">
         <h3>🍰 Sobremesas</h3>
+
         <div id="lista_sobremesas">
             {% for s in cardapio.sobremesas %}
             <div class="linha item-sobremesa">
-                <input type="text" class="sob_nome" placeholder="Nome da Sobremesa" value="{{ s.nome }}">
-                <input type="text" class="sob_preco" placeholder="Preço R$" value="{{ s.preco }}" style="width:90px;">
-                <button class="btn-del" onclick="this.parentElement.remove()">X</button>
+
+                <input
+                    type="text"
+                    class="sob_nome"
+                    placeholder="Nome da Sobremesa"
+                    value="{{ s.nome }}"
+                >
+
+                <input
+                    type="text"
+                    class="sob_preco"
+                    placeholder="Preço R$"
+                    value="{{ s.preco }}"
+                    style="width:90px;"
+                >
+
+                <button class="btn-del" type="button" onclick="this.parentElement.remove()">
+                    X
+                </button>
             </div>
             {% endfor %}
         </div>
-        <button class="btn-add" onclick="addSobremesa()">+ Adicionar Sobremesa</button>
+
+        <button class="btn-add" type="button" onclick="addSobremesa()">
+            + Adicionar Sobremesa
+        </button>
     </div>
 
-    <button class="btn-salvar" onclick="salvarTudo()">💾 SALVAR DADOS NO SITE</button>
-    <button class="btn-gerar-img" onclick="gerarImagemCardapio()">🖼️ GERAR IMAGEM DO CARDÁPIO (PARA REDES SOCIAIS)</button>
+    <button
+        class="btn-salvar"
+        id="btnSalvar"
+        type="button"
+        onclick="salvarTudo()"
+    >
+        💾 SALVAR DADOS NO SITE
+    </button>
+
+    <button
+        class="btn-gerar-img"
+        type="button"
+        onclick="gerarImagemCardapio()"
+    >
+        🖼️ GERAR IMAGEM DO CARDÁPIO
+    </button>
 </div>
+
 
 <!-- CONTAINER PARA IMAGEM -->
 <div id="cardapioImagem">
+
     <div class="img-header">
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+
         <h1>NOGUEIRA DELIVERY</h1>
         <h3>CARDÁPIO DO DIA</h3>
     </div>
+
     <div id="conteudoCardapioImg"></div>
+
     <div class="img-footer">
         📲 Peça pelo site ou WhatsApp!<br>
         Bom Apetite! ❤️
     </div>
 </div>
 
-<!-- MODAL IMAGEM -->
+
+<!-- MODAL -->
 <div class="modal" id="modalImagem">
+
     <div class="modal-content">
-        <button class="btn-fechar-top" onclick="fecharModal()" title="Fechar">✕</button>
+
+        <button
+            class="btn-fechar-top"
+            type="button"
+            onclick="fecharModal()"
+            title="Fechar"
+        >
+            ✕
+        </button>
+
         <h3>🖼️ Sua Imagem do Cardápio está Pronta!</h3>
-        <p style="font-size:13px; color:#555;">Clique com o botão direito ou segure na imagem para salvar, ou use o botão abaixo:</p>
+
+        <p style="font-size:13px; color:#555;">
+            Clique com o botão direito ou segure na imagem para salvar,
+            ou use o botão abaixo.
+        </p>
+
         <div id="areaPreviewImg" style="margin: 15px 0;"></div>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-            <a id="linkDownload" download="cardapio_nogueira_delivery.png" style="text-decoration: none;">
-                <button class="btn-baixar">⬇️ BAIXAR IMAGEM</button>
+
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+
+            <a
+                id="linkDownload"
+                download="cardapio_nogueira_delivery.png"
+                style="text-decoration:none;"
+            >
+                <button class="btn-baixar" type="button">
+                    ⬇️ BAIXAR IMAGEM
+                </button>
             </a>
-            <button class="btn-fechar" onclick="fecharModal()">FECHAR</button>
+
+            <button class="btn-fechar" type="button" onclick="fecharModal()">
+                FECHAR
+            </button>
+
         </div>
     </div>
 </div>
 
+
 <script>
+
+    // ======================================================
+    // FUNÇÕES DE ADIÇÃO
+    // ======================================================
+
     function addLinha(containerId, classe, placeholder) {
-        let cont = document.getElementById(containerId);
-        let div = document.createElement('div');
+        const cont = document.getElementById(containerId);
+
+        const div = document.createElement('div');
         div.className = 'linha';
-        div.innerHTML = `<input type="text" class="${classe}" placeholder="${placeholder}"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+
+        div.innerHTML = `
+            <input
+                type="text"
+                class="${classe}"
+                placeholder="${placeholder}"
+            >
+
+            <button
+                class="btn-del"
+                type="button"
+                onclick="this.parentElement.remove()"
+            >
+                X
+            </button>
+        `;
+
         cont.appendChild(div);
     }
+
 
     function addBairro() {
-        let cont = document.getElementById('lista_bairros');
-        let div = document.createElement('div');
+        const cont = document.getElementById('lista_bairros');
+
+        const div = document.createElement('div');
         div.className = 'linha item-bairro';
-        div.innerHTML = `<input type="text" class="bairro_nome" placeholder="Nome do Bairro"><input type="text" class="bairro_taxa" placeholder="Taxa R$" style="width:100px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+
+        div.innerHTML = `
+            <input
+                type="text"
+                class="bairro_nome"
+                placeholder="Nome do Bairro"
+            >
+
+            <input
+                type="text"
+                class="bairro_taxa"
+                placeholder="Taxa R$"
+                style="width:100px;"
+            >
+
+            <button
+                class="btn-del"
+                type="button"
+                onclick="this.parentElement.remove()"
+            >
+                X
+            </button>
+        `;
+
         cont.appendChild(div);
     }
+
 
     function addPrato() {
-        let cont = document.getElementById('lista_pratos');
-        let div = document.createElement('div');
+        const cont = document.getElementById('lista_pratos');
+
+        const div = document.createElement('div');
         div.className = 'linha item-prato';
-        div.innerHTML = `<input type="text" class="prato_nome" placeholder="Nome do Prato"><input type="text" class="prato_m" placeholder="R$ M" style="width:70px;"><input type="text" class="prato_g" placeholder="R$ G" style="width:70px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+
+        div.innerHTML = `
+            <input
+                type="text"
+                class="prato_nome"
+                placeholder="Nome do Prato"
+            >
+
+            <input
+                type="text"
+                class="prato_m"
+                placeholder="R$ M"
+                style="width:70px;"
+            >
+
+            <input
+                type="text"
+                class="prato_g"
+                placeholder="R$ G"
+                style="width:70px;"
+            >
+
+            <button
+                class="btn-del"
+                type="button"
+                onclick="this.parentElement.remove()"
+            >
+                X
+            </button>
+        `;
+
         cont.appendChild(div);
     }
+
 
     function addBebida() {
-        let cont = document.getElementById('lista_bebidas');
-        let div = document.createElement('div');
+        const cont = document.getElementById('lista_bebidas');
+
+        const div = document.createElement('div');
         div.className = 'linha item-bebida';
-        div.innerHTML = `<input type="text" class="bebida_nome" placeholder="Nome da Bebida"><input type="text" class="bebida_preco" placeholder="Preço R$" style="width:90px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+
+        div.innerHTML = `
+            <input
+                type="text"
+                class="bebida_nome"
+                placeholder="Nome da Bebida"
+            >
+
+            <input
+                type="text"
+                class="bebida_preco"
+                placeholder="Preço R$"
+                style="width:90px;"
+            >
+
+            <button
+                class="btn-del"
+                type="button"
+                onclick="this.parentElement.remove()"
+            >
+                X
+            </button>
+        `;
+
         cont.appendChild(div);
     }
+
 
     function addSobremesa() {
-        let cont = document.getElementById('lista_sobremesas');
-        let div = document.createElement('div');
+        const cont = document.getElementById('lista_sobremesas');
+
+        const div = document.createElement('div');
         div.className = 'linha item-sobremesa';
-        div.innerHTML = `<input type="text" class="sob_nome" placeholder="Nome da Sobremesa"><input type="text" class="sob_preco" placeholder="Preço R$" style="width:90px;"><button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+
+        div.innerHTML = `
+            <input
+                type="text"
+                class="sob_nome"
+                placeholder="Nome da Sobremesa"
+            >
+
+            <input
+                type="text"
+                class="sob_preco"
+                placeholder="Preço R$"
+                style="width:90px;"
+            >
+
+            <button
+                class="btn-del"
+                type="button"
+                onclick="this.parentElement.remove()"
+            >
+                X
+            </button>
+        `;
+
         cont.appendChild(div);
     }
 
+
+    // ======================================================
+    // LEITURA DOS CAMPOS
+    // ======================================================
+
     function pegarValores(classe) {
-        let res = [];
-        document.querySelectorAll('.' + classe).forEach(i => {
-            if(i.value.trim() !== '') res.push(i.value.trim());
+        const res = [];
+
+        document.querySelectorAll('.' + classe).forEach(input => {
+            const valor = input.value.trim();
+
+            if (valor !== '') {
+                res.push(valor);
+            }
         });
+
         return res;
     }
 
-    function salvarTudo() {
-        let bairros = [];
-        document.querySelectorAll('.item-bairro').forEach(el => {
-            let n = el.querySelector('.bairro_nome').value;
-            let t = el.querySelector('.bairro_taxa').value;
-            if(n) bairros.push({nome: n, taxa: t});
+
+    // ======================================================
+    // MENSAGEM DE STATUS
+    // ======================================================
+
+    function mostrarStatus(mensagem, tipo) {
+        const status = document.getElementById('statusSalvamento');
+
+        status.className = '';
+
+        if (tipo === 'sucesso') {
+            status.classList.add('status-sucesso');
+        } else {
+            status.classList.add('status-erro');
+        }
+
+        status.textContent = mensagem;
+        status.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
         });
-
-        let pratos = [];
-        document.querySelectorAll('.item-prato').forEach(el => {
-            let n = el.querySelector('.prato_nome').value;
-            let m = el.querySelector('.prato_m').value;
-            let g = el.querySelector('.prato_g').value;
-            if(n) pratos.push({nome: n, preco_m: m, preco_g: g});
-        });
-
-        let bebidas = [];
-        document.querySelectorAll('.item-bebida').forEach(el => {
-            let n = el.querySelector('.bebida_nome').value;
-            let p = el.querySelector('.bebida_preco').value;
-            if(n) bebidas.push({nome: n, preco: p});
-        });
-
-        let sobremesas = [];
-        document.querySelectorAll('.item-sobremesa').forEach(el => {
-            let n = el.querySelector('.sob_nome').value;
-            let p = el.querySelector('.sob_preco').value;
-            if(n) sobremesas.push({nome: n, preco: p});
-        });
-
-        let dados = {
-            chave_pix: document.getElementById('chave_pix').value,
-            whatsapp: document.getElementById('whatsapp').value,
-            bairros: bairros,
-            especiais: {
-                ativo: document.getElementById('esp_ativo').checked,
-                preco_m: document.getElementById('esp_m').value,
-                preco_g: document.getElementById('esp_g').value,
-                carnes: pegarValores('esp_carne'),
-                guarnicoes: pegarValores('esp_guarnicao')
-            },
-            casa: {
-                ativo: document.getElementById('casa_ativo').checked,
-                preco_m: document.getElementById('casa_m').value,
-                preco_g: document.getElementById('casa_g').value,
-                carnes: pegarValores('casa_carne'),
-                guarnicoes: pegarValores('casa_guarnicao')
-            },
-            pratos_casa: pratos,
-            bebidas: bebidas,
-            sobremesas: sobremesas
-        };
-
-        fetch('/api/salvar-cardapio', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(dados)
-        })
-        .then(r => r.json())
-        .then(d => { alert('✅ Cardápio salvo com sucesso!'); location.reload(); })
-        .catch(e => alert('❌ Erro ao salvar!'));
     }
+
+
+    // ======================================================
+    // SALVAR CARDÁPIO
+    // ======================================================
+
+    async function salvarTudo() {
+
+        const btn = document.getElementById('btnSalvar');
+
+        btn.disabled = true;
+        btn.textContent = '⏳ SALVANDO...';
+
+        mostrarStatus('Salvando cardápio no banco de dados...', 'sucesso');
+
+        try {
+
+            // ----------------------------------------------
+            // BAIRROS
+            // ----------------------------------------------
+
+            const bairros = [];
+
+            document.querySelectorAll('.item-bairro').forEach(el => {
+
+                const nome = el.querySelector('.bairro_nome').value.trim();
+                const taxa = el.querySelector('.bairro_taxa').value.trim();
+
+                if (nome) {
+                    bairros.push({
+                        nome: nome,
+                        taxa: taxa
+                    });
+                }
+            });
+
+
+            // ----------------------------------------------
+            // PRATOS
+            // ----------------------------------------------
+
+            const pratos = [];
+
+            document.querySelectorAll('.item-prato').forEach(el => {
+
+                const nome = el.querySelector('.prato_nome').value.trim();
+                const precoM = el.querySelector('.prato_m').value.trim();
+                const precoG = el.querySelector('.prato_g').value.trim();
+
+                if (nome) {
+                    pratos.push({
+                        nome: nome,
+                        preco_m: precoM,
+                        preco_g: precoG
+                    });
+                }
+            });
+
+
+            // ----------------------------------------------
+            // BEBIDAS
+            // ----------------------------------------------
+
+            const bebidas = [];
+
+            document.querySelectorAll('.item-bebida').forEach(el => {
+
+                const nome = el.querySelector('.bebida_nome').value.trim();
+                const preco = el.querySelector('.bebida_preco').value.trim();
+
+                if (nome) {
+                    bebidas.push({
+                        nome: nome,
+                        preco: preco
+                    });
+                }
+            });
+
+
+            // ----------------------------------------------
+            // SOBREMESAS
+            // ----------------------------------------------
+
+            const sobremesas = [];
+
+            document.querySelectorAll('.item-sobremesa').forEach(el => {
+
+                const nome = el.querySelector('.sob_nome').value.trim();
+                const preco = el.querySelector('.sob_preco').value.trim();
+
+                if (nome) {
+                    sobremesas.push({
+                        nome: nome,
+                        preco: preco
+                    });
+                }
+            });
+
+
+            // ----------------------------------------------
+            // OBJETO COMPLETO
+            // ----------------------------------------------
+
+            const dados = {
+
+                chave_pix:
+                    document.getElementById('chave_pix').value.trim(),
+
+                whatsapp:
+                    document.getElementById('whatsapp').value.trim(),
+
+                bairros: bairros,
+
+                especiais: {
+
+                    ativo:
+                        document.getElementById('esp_ativo').checked,
+
+                    preco_m:
+                        document.getElementById('esp_m').value.trim(),
+
+                    preco_g:
+                        document.getElementById('esp_g').value.trim(),
+
+                    carnes:
+                        pegarValores('esp_carne'),
+
+                    guarnicoes:
+                        pegarValores('esp_guarnicao')
+                },
+
+                casa: {
+
+                    ativo:
+                        document.getElementById('casa_ativo').checked,
+
+                    preco_m:
+                        document.getElementById('casa_m').value.trim(),
+
+                    preco_g:
+                        document.getElementById('casa_g').value.trim(),
+
+                    carnes:
+                        pegarValores('casa_carne'),
+
+                    guarnicoes:
+                        pegarValores('casa_guarnicao')
+                },
+
+                pratos_casa: pratos,
+                bebidas: bebidas,
+                sobremesas: sobremesas
+            };
+
+
+            // ----------------------------------------------
+            // ENVIO PARA O FLASK
+            // ----------------------------------------------
+
+            const resposta = await fetch('/api/salvar-cardapio', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+
+                body: JSON.stringify(dados),
+
+                cache: 'no-store'
+            });
+
+
+            // Tenta ler o JSON mesmo quando o servidor responde erro
+            let resultado;
+
+            try {
+                resultado = await resposta.json();
+            } catch {
+                throw new Error(
+                    'O servidor não devolveu uma resposta JSON válida. ' +
+                    'Verifique os logs da aplicação.'
+                );
+            }
+
+
+            // ----------------------------------------------
+            // VERIFICAÇÃO REAL DO RESULTADO
+            // ----------------------------------------------
+
+            if (!resposta.ok || resultado.status !== 'sucesso') {
+
+                const erroServidor =
+                    resultado.erro ||
+                    resultado.mensagem ||
+                    'O servidor recusou o salvamento.';
+
+                throw new Error(erroServidor);
+            }
+
+
+            // ----------------------------------------------
+            // SUCESSO
+            // ----------------------------------------------
+
+            mostrarStatus(
+                '✅ CARDÁPIO SALVO COM SUCESSO! Agora o site do cliente já está lendo os novos dados.',
+                'sucesso'
+            );
+
+            alert(
+                '✅ Cardápio salvo com sucesso!\n\n' +
+                'A alteração foi gravada no banco de dados.'
+            );
+
+            // Recarrega o painel pegando o valor atual do banco
+            setTimeout(() => {
+                window.location.href = '/admin?atualizado=' + Date.now();
+            }, 300);
+
+        } catch (erro) {
+
+            console.error('ERRO AO SALVAR:', erro);
+
+            mostrarStatus(
+                '❌ NÃO FOI POSSÍVEL SALVAR.\n\n' +
+                erro.message,
+                'erro'
+            );
+
+            alert(
+                '❌ ERRO AO SALVAR O CARDÁPIO:\n\n' +
+                erro.message
+            );
+
+        } finally {
+
+            btn.disabled = false;
+            btn.textContent = '💾 SALVAR DADOS NO SITE';
+        }
+    }
+
+
+    // ======================================================
+    // GERAR IMAGEM
+    // ======================================================
 
     function gerarImagemCardapio() {
+
         let html = '';
 
-        if(document.getElementById('esp_ativo').checked) {
-            let m = document.getElementById('esp_m').value;
-            let g = document.getElementById('esp_g').value;
-            let carnes = pegarValores('esp_carne').join(', ');
-            let guarn = pegarValores('esp_guarnicao').join(', ');
+
+        // ----------------------------------------------
+        // ESPECIAIS
+        // ----------------------------------------------
+
+        if (document.getElementById('esp_ativo').checked) {
+
+            const m =
+                document.getElementById('esp_m').value;
+
+            const g =
+                document.getElementById('esp_g').value;
+
+            const carnes =
+                pegarValores('esp_carne').join(', ');
+
+            const guarn =
+                pegarValores('esp_guarnicao').join(', ');
 
             html += `
                 <div class="img-cat">
-                    <div class="img-cat-title">⭐ MARMITAS ESPECIAIS (M: R$ ${m} | G: R$ ${g})</div>
-                    <div class="img-item"><span class="img-item-bold">Opções de Carne:</span> ${carnes || 'Nenhuma'}</div>
-                    <div class="img-sub"><b>Guarnições:</b> ${guarn || 'Nenhuma'}</div>
+                    <div class="img-cat-title">
+                        ⭐ MARMITAS ESPECIAIS
+                        (M: R$ ${m} | G: R$ ${g})
+                    </div>
+
+                    <div class="img-item">
+                        <span class="img-item-bold">
+                            Opções de Carne:
+                        </span>
+                        ${carnes || 'Nenhuma'}
+                    </div>
+
+                    <div class="img-sub">
+                        <b>Guarnições:</b>
+                        ${guarn || 'Nenhuma'}
+                    </div>
                 </div>
             `;
         }
 
-        if(document.getElementById('casa_ativo').checked) {
-            let m = document.getElementById('casa_m').value;
-            let g = document.getElementById('casa_g').value;
-            let carnes = pegarValores('casa_carne').join(', ');
-            let guarn = pegarValores('casa_guarnicao').join(', ');
+
+        // ----------------------------------------------
+        // CASA
+        // ----------------------------------------------
+
+        if (document.getElementById('casa_ativo').checked) {
+
+            const m =
+                document.getElementById('casa_m').value;
+
+            const g =
+                document.getElementById('casa_g').value;
+
+            const carnes =
+                pegarValores('casa_carne').join(', ');
+
+            const guarn =
+                pegarValores('casa_guarnicao').join(', ');
 
             html += `
                 <div class="img-cat">
-                    <div class="img-cat-title">🏠 MARMITAS DA CASA (M: R$ ${m} | G: R$ ${g})</div>
-                    <div class="img-item"><span class="img-item-bold">Opções de Carne:</span> ${carnes || 'Nenhuma'}</div>
-                    <div class="img-sub"><b>Guarnições:</b> ${guarn || 'Nenhuma'}</div>
+                    <div class="img-cat-title">
+                        🏠 MARMITAS DA CASA
+                        (M: R$ ${m} | G: R$ ${g})
+                    </div>
+
+                    <div class="img-item">
+                        <span class="img-item-bold">
+                            Opções de Carne:
+                        </span>
+                        ${carnes || 'Nenhuma'}
+                    </div>
+
+                    <div class="img-sub">
+                        <b>Guarnições:</b>
+                        ${guarn || 'Nenhuma'}
+                    </div>
                 </div>
             `;
         }
 
-        let pratos = [];
+
+        // ----------------------------------------------
+        // PRATOS
+        // ----------------------------------------------
+
+        const pratos = [];
+
         document.querySelectorAll('.item-prato').forEach(el => {
-            let n = el.querySelector('.prato_nome').value;
-            let m = el.querySelector('.prato_m').value;
-            let g = el.querySelector('.prato_g').value;
-            if(n) pratos.push(`• ${n} (M: R$ ${m} | G: R$ ${g})`);
+
+            const n =
+                el.querySelector('.prato_nome').value;
+
+            const m =
+                el.querySelector('.prato_m').value;
+
+            const g =
+                el.querySelector('.prato_g').value;
+
+            if (n) {
+                pratos.push(
+                    `• ${n} (M: R$ ${m} | G: R$ ${g})`
+                );
+            }
         });
-        if(pratos.length > 0) {
+
+        if (pratos.length > 0) {
+
             html += `
                 <div class="img-cat">
-                    <div class="img-cat-title">🍲 PRATOS DA CASA</div>
-                    <div class="img-item">${pratos.join('<br>')}</div>
+
+                    <div class="img-cat-title">
+                        🍲 PRATOS DA CASA
+                    </div>
+
+                    <div class="img-item">
+                        ${pratos.join('<br>')}
+                    </div>
+
                 </div>
             `;
         }
 
-        let bebidas = [];
+
+        // ----------------------------------------------
+        // BEBIDAS
+        // ----------------------------------------------
+
+        const bebidas = [];
+
         document.querySelectorAll('.item-bebida').forEach(el => {
-            let n = el.querySelector('.bebida_nome').value;
-            let p = el.querySelector('.bebida_preco').value;
-            if(n) bebidas.push(`• ${n} - R$ ${p}`);
+
+            const n =
+                el.querySelector('.bebida_nome').value;
+
+            const p =
+                el.querySelector('.bebida_preco').value;
+
+            if (n) {
+                bebidas.push(
+                    `• ${n} - R$ ${p}`
+                );
+            }
         });
-        if(bebidas.length > 0) {
+
+        if (bebidas.length > 0) {
+
             html += `
                 <div class="img-cat">
-                    <div class="img-cat-title">🥤 BEBIDAS</div>
-                    <div class="img-item">${bebidas.join('<br>')}</div>
+
+                    <div class="img-cat-title">
+                        🥤 BEBIDAS
+                    </div>
+
+                    <div class="img-item">
+                        ${bebidas.join('<br>')}
+                    </div>
+
                 </div>
             `;
         }
 
-        let sobremesas = [];
+
+        // ----------------------------------------------
+        // SOBREMESAS
+        // ----------------------------------------------
+
+        const sobremesas = [];
+
         document.querySelectorAll('.item-sobremesa').forEach(el => {
-            let n = el.querySelector('.sob_nome').value;
-            let p = el.querySelector('.sob_preco').value;
-            if(n) sobremesas.push(`• ${n} - R$ ${p}`);
+
+            const n =
+                el.querySelector('.sob_nome').value;
+
+            const p =
+                el.querySelector('.sob_preco').value;
+
+            if (n) {
+                sobremesas.push(
+                    `• ${n} - R$ ${p}`
+                );
+            }
         });
-        if(sobremesas.length > 0) {
+
+        if (sobremesas.length > 0) {
+
             html += `
                 <div class="img-cat">
-                    <div class="img-cat-title">🍰 SOBREMESAS</div>
-                    <div class="img-item">${sobremesas.join('<br>')}</div>
+
+                    <div class="img-cat-title">
+                        🍰 SOBREMESAS
+                    </div>
+
+                    <div class="img-item">
+                        ${sobremesas.join('<br>')}
+                    </div>
+
                 </div>
             `;
         }
 
-        document.getElementById('conteudoCardapioImg').innerHTML = html;
 
-        let box = document.getElementById('cardapioImagem');
+        document.getElementById(
+            'conteudoCardapioImg'
+        ).innerHTML = html;
+
+
+        const box =
+            document.getElementById('cardapioImagem');
+
         box.style.display = 'block';
 
-        html2canvas(box, { scale: 2 }).then(canvas => {
-            box.style.display = 'none';
-            let imgData = canvas.toDataURL('image/png');
 
-            document.getElementById('areaPreviewImg').innerHTML = `<img src="${imgData}" style="max-width:100%; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">`;
-            document.getElementById('linkDownload').href = imgData;
-            document.getElementById('modalImagem').style.display = 'flex';
+        html2canvas(box, {
+            scale: 2
+        }).then(canvas => {
+
+            box.style.display = 'none';
+
+            const imgData =
+                canvas.toDataURL('image/png');
+
+            document.getElementById(
+                'areaPreviewImg'
+            ).innerHTML = `
+                <img
+                    src="${imgData}"
+                    style="
+                        max-width:100%;
+                        border-radius:10px;
+                        box-shadow:0 2px 10px rgba(0,0,0,0.2);
+                    "
+                >
+            `;
+
+            document.getElementById(
+                'linkDownload'
+            ).href = imgData;
+
+            document.getElementById(
+                'modalImagem'
+            ).style.display = 'flex';
         });
     }
 
+
     function fecharModal() {
-        document.getElementById('modalImagem').style.display = 'none';
+
+        document.getElementById(
+            'modalImagem'
+        ).style.display = 'none';
     }
+
 </script>
+
 </body>
 </html>
